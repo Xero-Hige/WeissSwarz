@@ -72,11 +72,13 @@ class _PlayerSide(object):
     def draw(self, amount):
         """ """
         cards = []
-        while (not self.deck.is_empty()) and (amount < len(cards)):
+        while (not self.deck.is_empty()) and (amount > len(cards)):
             cards.append(self.deck.draw_card())
 
         if self.deck.is_empty():
             self.refill_deck()
+
+        return cards
 
     def refill_deck(self):
         """ """
@@ -106,6 +108,6 @@ class GameBoard(object):
     def draw(self, side, amount=1):
         """ """
         if side == WEISS_SIDE:
-            self.weiss.draw(amount)
+            return self.weiss.draw(amount)
         elif side == SCHWARZ_SIDE:
-            self.schwarz.draw(amount)
+            return self.schwarz.draw(amount)

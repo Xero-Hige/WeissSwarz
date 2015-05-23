@@ -10,6 +10,11 @@ class Card(object):
         self.trigger_icon = trigger_icon
         self.hability = hability
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
 
 class CharacterCard(Card):
     """Simulates a character card"""
@@ -22,7 +27,6 @@ class CharacterCard(Card):
         self.power = power
         self.soul_points = soul_points
         self.trait = trait
-
 
 class ClimaxCard(Card):
     """ """

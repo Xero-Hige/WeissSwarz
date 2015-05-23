@@ -9,3 +9,6 @@ gameboard = GameBoard()
 # first turn
 player1_hand = gameboard.draw(board.WEISS_SIDE, 5)
 player2_hand = gameboard.draw(board.SCHWARZ_SIDE, 5)
+
+print player1_hand
+print player2_hand
