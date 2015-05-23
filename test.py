@@ -1,11 +1,10 @@
 __author__ = 'hige'
 
 
-class GameBoard(object):
-    """Simulates the gameboard"""
+class _Board_Side(object):
+    """Simulates a player field"""
 
     def __init__(self):
-        """Creates an empty gameboard"""
         self.clock = []
         self.stock = []
         self.level = []
@@ -18,6 +17,18 @@ class GameBoard(object):
         self.back_stage = [None, None]
 
 
+class GameBoard(object):
+    """Simulates the gameboard"""
+
+    def __init__(self):
+        """Creates an empty gameboard"""
+
+        # White (Weiss)
+        self.weiss = _Board_Side()
+
+        self.schwarz = _Board_Side()
+
+
 class Deck(object):
     """Simulates a deck"""
 
@@ -27,7 +38,7 @@ class Deck(object):
         self.cards = []
 
         while True:
-            self.cards.append(CharacterCard(2000))
+            self.cards.append(CharacterCard("Dovahkiin", "Red", 0, None, 0, 0, 2000, 1, ("Warrior", "Dragon")))
             break
 
     def draw_card(self):
