@@ -39,15 +39,18 @@ def simulate_game():
     # first turn
     print "Weiss first turn"
     clocking(gameboard, player1_hand, board.WEISS_SIDE)
+    play_character(gameboard, player1_hand, board.WEISS_SIDE)
 
-    card = random.choice(player1_hand)
-    player1_hand.remove(card)
 
-    if gameboard.can_be_played(board.WEISS_SIDE, card):
+def play_character(gameboard, player, side):
+    card = random.choice(player)
+    player.remove(card)
+    if gameboard.can_be_played(side, card):
         print "Can play:", card
-        gameboard.play_character(board.WEISS_SIDE, card, board.FRONT_STAGE, board.FRONT_LEFT)
+        gameboard.play_character(side, card, board.FRONT_STAGE, board.FRONT_LEFT)
     else:
         print "Can't play: ", card
+        player.append(card)
 
 
 simulate_game()
