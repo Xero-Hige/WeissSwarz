@@ -28,13 +28,13 @@ class _PlayerSide(object):
         atacker_card = self.front_stage[atacker]
         defender_card = another_side.front_stage[defender]
 
-        trigger_card = self.deck.draw_card();
+        trigger_card = self.deck.draw_card()
 
-        trigger_icon = trigger_card.triger_icon;
+        trigger_icon = trigger_card.triger_icon
 
         if atacker_card.power > defender_card.power:
             soul_points = atacker_card.soul_points
-            soul_points += trigger_icon;
+            soul_points += trigger_icon
             another_side.get_hit(soul_points)
             another_side.destroy(defender)
 
@@ -66,7 +66,7 @@ class _PlayerSide(object):
         if len(self.clock >= 7):
             self.level_up()
 
-    def destroy(card_number):
+    def destroy(self, card_number):
         pass
 
     def draw(self, amount):
