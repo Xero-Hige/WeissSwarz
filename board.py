@@ -40,7 +40,7 @@ class _PlayerSide(object):
 
         trigger_card = self.deck.draw_card()
 
-        trigger_icon = trigger_card.triger_icon
+        trigger_icon = trigger_card.get_trigger_icon()
 
         if atacker_card.power > defender_card.power:
             soul_points = atacker_card.soul_points

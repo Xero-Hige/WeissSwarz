@@ -23,6 +23,17 @@ def clocking(gameboard, player, side):
     print "Clock level:", gameboard.get_clock_level(side)
 
 
+def play_character(gameboard, player, side):
+    card = random.choice(player)
+    player.remove(card)
+    if gameboard.can_be_played(side, card):
+        print "Can play:", card
+        gameboard.play_character(side, card, board.FRONT_STAGE, board.FRONT_LEFT)
+    else:
+        print "Can't play: ", card
+        player.append(card)
+
+
 def simulate_game():
     """  """
     # Board creation
@@ -41,16 +52,13 @@ def simulate_game():
     clocking(gameboard, player1_hand, board.WEISS_SIDE)
     play_character(gameboard, player1_hand, board.WEISS_SIDE)
 
+    print "Before attack"
+    print "Schwarz clock level:", gameboard.get_clock_level(board.SCHWARZ_SIDE)
 
-def play_character(gameboard, player, side):
-    card = random.choice(player)
-    player.remove(card)
-    if gameboard.can_be_played(side, card):
-        print "Can play:", card
-        gameboard.play_character(side, card, board.FRONT_STAGE, board.FRONT_LEFT)
-    else:
-        print "Can't play: ", card
-        player.append(card)
+    gameboard.atack(board.WEISS_SIDE, board.FRONT_LEFT, board.FRONT_RIGHT)
+
+    print "After attack"
+    print "Schwarz clock level:", gameboard.get_clock_level(board.SCHWARZ_SIDE)
 
 
 simulate_game()

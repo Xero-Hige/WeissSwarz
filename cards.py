@@ -19,6 +19,9 @@ class Card(object):
     def get_color(self):
         return self.name + "(" + self.color + ")"
 
+    def get_trigger_icon(self):
+        return self.trigger_icon
+
 
 class CharacterCard(Card):
     """Simulates a character card"""
