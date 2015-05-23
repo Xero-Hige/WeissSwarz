@@ -90,9 +90,27 @@ class _PlayerSide(object):
         """ """
         return len(self.clock)
 
+    def get_level(self):
+        """ """
+        return len(self.level)
+
     def clocking(self, card):
         self.clock.append(card)
         return self.draw(2)
+
+    def get_playable_colors(self):
+        colors = {}
+        for card in self.level:
+            colors[card.get_color()] = 0
+
+        for card in self.clock:
+            colors[card.get_color()] = 0
+
+        return colors.keys()
+
+    def can_be_played(self, card):
+        if card.level > self.get_level():
+            return False
 
 
 class GameBoard(object):
@@ -136,3 +154,10 @@ class GameBoard(object):
 
         elif side == SCHWARZ_SIDE:
             return self.schwarz.clocking(card)
+
+    def can_be_played(self, side, card):
+        if side == WEISS_SIDE:
+            return self.weiss.can_be_played(card)
+
+        elif side == SCHWARZ_SIDE:
+            return self.schwarz.can_be_played(card)

@@ -16,6 +16,9 @@ class Card(object):
     def __repr__(self):
         return self.name
 
+    def get_color(self):
+        return self.color
+
 class CharacterCard(Card):
     """Simulates a character card"""
 
@@ -27,6 +30,9 @@ class CharacterCard(Card):
         self.power = power
         self.soul_points = soul_points
         self.trait = trait
+
+    def get_level(self):
+        return self.level
 
 class ClimaxCard(Card):
     """ """

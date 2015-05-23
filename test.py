@@ -5,17 +5,6 @@ import board
 
 __author__ = 'hige'
 
-# Board creation
-gameboard = GameBoard()
-
-# Init
-player1_hand = gameboard.draw(board.WEISS_SIDE, 5)
-player2_hand = gameboard.draw(board.SCHWARZ_SIDE, 5)
-
-print "Opening hand"
-print player1_hand
-print player2_hand
-
 
 def clocking(player, side):
     print "Before clocking"
@@ -33,5 +22,29 @@ def clocking(player, side):
     print player
     print "Clock level:", gameboard.get_clock_level(side)
 
-# first turn
-clocking(player1_hand, board.WEISS_SIDE)
+
+def simulate_game():
+    """  """
+    # Board creation
+    gameboard = GameBoard()
+
+    # Init
+    player1_hand = gameboard.draw(board.WEISS_SIDE, 5)
+    player2_hand = gameboard.draw(board.SCHWARZ_SIDE, 5)
+
+    print "Opening hand"
+    print player1_hand
+    print player2_hand
+
+    # first turn
+    print "Weiss first turn"
+    clocking(player1_hand, board.WEISS_SIDE)
+
+    card = random.choice(player1_hand)
+    player1_hand.remove(card)
+
+    gameboard.can_be_played(board.WEISS_SIDE, card)
+    gameboard.play_character(board.WEISS_SIDE, card, "front", "center")
+
+
+simulate_game()
