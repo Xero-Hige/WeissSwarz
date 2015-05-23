@@ -26,6 +26,10 @@ class Deck(object):
 
         self.cards = []
 
+        while True:
+            self.cards.append(CharacterCard(2000))
+            break
+
     def draw_card(self):
         """ Draws a card from the deck """
         return self.cards.pop()
@@ -46,3 +50,6 @@ class CharacterCard(Card):
 
 board = GameBoard()
 deck = Deck("swartz")
+card = deck.draw_card()
+
+print card.atk
