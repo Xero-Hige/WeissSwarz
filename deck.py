@@ -23,8 +23,11 @@ class Deck(object):
 
     def add_cards(self, card_list):
         """ """
-        self.card += card_list
+        self.cards += card_list
 
     def shuffle(self):
         """ """
         random.shuffle(self.cards)
+
+    def is_empty(self):
+        return len(self.cards) == 0

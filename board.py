@@ -63,7 +63,7 @@ class _PlayerSide(object):
 
         self.clock += damage
 
-        if len(self.clock >= 7):
+        if len(self.clock) >= 7:
             self.level_up()
 
     def destroy(self, card_number):
