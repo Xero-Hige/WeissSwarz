@@ -19,6 +19,7 @@ class Card(object):
     def get_color(self):
         return self.name + "(" + self.color + ")"
 
+
 class CharacterCard(Card):
     """Simulates a character card"""
 
@@ -36,6 +37,7 @@ class CharacterCard(Card):
 
     def get_cost(self):
         return self.cost
+
 
 class ClimaxCard(Card):
     """ """

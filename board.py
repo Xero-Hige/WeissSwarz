@@ -1,3 +1,13 @@
+BACK_STAGE = "back"
+FRONT_STAGE = "front"
+
+FRONT_LEFT = 0
+FRONT_CENTER = 1
+FRONT_RIGHT = 2
+
+BACK_LEFT = 0
+BACK_RIGHT = 1
+
 SCHWARZ_SIDE = "schwarz"
 WEISS_SIDE = "weiss"
 __author__ = 'hige'
@@ -116,7 +126,7 @@ class _PlayerSide(object):
             colors[card.get_color()] = 0
         return colors.keys()
 
-    def can_be_played(self, card):
+    def can_play_character(self, card):
         if None not in self.front_stage + self.back_stage:
             return False
 
@@ -136,7 +146,21 @@ class _PlayerSide(object):
         return True
 
     def play_character(self, card, stage, position):
-        pass
+        if not self.can_play_character(card):
+            raise ValueError, "Carta no jugable"
+
+        if stage == FRONT_STAGE:
+            if self.front_stage[position]:
+                raise IndexError, "Posicion ocupada"
+            self.front_stage[position] = card
+
+        elif stage == BACK_STAGE:
+            if self.front_stage[position]:
+                raise IndexError, "Posicion ocupada"
+            self.front_stage[position] = card
+
+        else:
+            raise ValueError, "No existe esa stage"
 
 
 class GameBoard(object):
@@ -183,10 +207,10 @@ class GameBoard(object):
 
     def can_be_played(self, side, card):
         if side == WEISS_SIDE:
-            return self.weiss.can_be_played(card)
+            return self.weiss.can_play_character(card)
 
         elif side == SCHWARZ_SIDE:
-            return self.schwarz.can_be_played(card)
+            return self.schwarz.can_play_character(card)
 
     def play_character(self, side, card, stage, position):
         if side == WEISS_SIDE:

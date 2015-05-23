@@ -45,7 +45,7 @@ def simulate_game():
 
     if gameboard.can_be_played(board.WEISS_SIDE, card):
         print "Can play:", card
-        gameboard.play_character(board.WEISS_SIDE, card, "front", "center")
+        gameboard.play_character(board.WEISS_SIDE, card, board.FRONT_STAGE, board.FRONT_LEFT)
     else:
         print "Can't play: ", card
 
