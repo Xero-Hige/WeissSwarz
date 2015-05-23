@@ -6,7 +6,7 @@ import board
 __author__ = 'hige'
 
 
-def clocking(player, side):
+def clocking(gameboard, player, side):
     print "Before clocking"
     print player
     print "Clock level:", gameboard.get_clock_level(side)
@@ -38,13 +38,16 @@ def simulate_game():
 
     # first turn
     print "Weiss first turn"
-    clocking(player1_hand, board.WEISS_SIDE)
+    clocking(gameboard, player1_hand, board.WEISS_SIDE)
 
     card = random.choice(player1_hand)
     player1_hand.remove(card)
 
-    gameboard.can_be_played(board.WEISS_SIDE, card)
-    gameboard.play_character(board.WEISS_SIDE, card, "front", "center")
+    if gameboard.can_be_played(board.WEISS_SIDE, card):
+        print "Can play:", card
+        gameboard.play_character(board.WEISS_SIDE, card, "front", "center")
+    else:
+        print "Can't play: ", card
 
 
 simulate_game()

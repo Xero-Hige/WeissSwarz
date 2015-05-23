@@ -98,19 +98,45 @@ class _PlayerSide(object):
         self.clock.append(card)
         return self.draw(2)
 
-    def get_playable_colors(self):
+    def get_clock_colors(self):
         colors = {}
-        for card in self.level:
-            colors[card.get_color()] = 0
-
         for card in self.clock:
             colors[card.get_color()] = 0
+        return colors.keys()
 
+    def get_level_colors(self):
+        colors = {}
+        for card in self.clock:
+            colors[card.get_color()] = 0
+        return colors.keys()
+
+    def get_stock_colors(self):
+        colors = {}
+        for card in self.clock:
+            colors[card.get_color()] = 0
         return colors.keys()
 
     def can_be_played(self, card):
-        if card.level > self.get_level():
+        if None not in self.front_stage + self.back_stage:
             return False
+
+        if card.get_level() > self.get_level():
+            return False
+
+        if card.get_cost() > len(self.stock):
+            return False
+
+        playable_colors = self.get_clock_colors()
+        playable_colors += self.get_level_colors()
+
+        if card.get_color() not in playable_colors:
+            if card.get_level() != 0:
+                return False
+
+        return True
+
+    def play_character(self, card, stage, position):
+        pass
 
 
 class GameBoard(object):
@@ -161,3 +187,10 @@ class GameBoard(object):
 
         elif side == SCHWARZ_SIDE:
             return self.schwarz.can_be_played(card)
+
+    def play_character(self, side, card, stage, position):
+        if side == WEISS_SIDE:
+            return self.weiss.play_character(card, stage, position)
+
+        elif side == SCHWARZ_SIDE:
+            return self.schwarz.play_character(card, stage, position)

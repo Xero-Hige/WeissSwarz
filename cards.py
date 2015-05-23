@@ -14,10 +14,10 @@ class Card(object):
         return self.name
 
     def __repr__(self):
-        return self.name
+        return self.name + "(" + self.color + ")"
 
     def get_color(self):
-        return self.color
+        return self.name + "(" + self.color + ")"
 
 class CharacterCard(Card):
     """Simulates a character card"""
@@ -33,6 +33,9 @@ class CharacterCard(Card):
 
     def get_level(self):
         return self.level
+
+    def get_cost(self):
+        return self.cost
 
 class ClimaxCard(Card):
     """ """
