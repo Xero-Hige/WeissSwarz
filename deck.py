@@ -1,7 +1,9 @@
 import random
+
 from cards import CharacterCard
 
 __author__ = 'hige'
+
 
 class Deck(object):
     """Simulates a deck"""
@@ -19,7 +21,7 @@ class Deck(object):
         """ Draws a card from the deck """
         return self.cards.pop()
 
-    def add_cards(self,card_list):
+    def add_cards(self, card_list):
         """ """
         self.card += card_list
 

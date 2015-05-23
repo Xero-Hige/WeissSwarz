@@ -1,5 +1,6 @@
 __author__ = 'hige'
 
+
 class Card(object):
     """ Simulates a card  """
 

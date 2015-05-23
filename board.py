@@ -69,10 +69,10 @@ class _PlayerSide(object):
     def destroy(card_number):
         pass
 
-    def draw(self,amount):
+    def draw(self, amount):
         """ """
         cards = []
-        while (not self.deck.is_empty()) and (amount<len(cards)):
+        while (not self.deck.is_empty()) and (amount < len(cards)):
             cards.append(self.deck.draw_card())
 
         if self.deck.is_empty():
