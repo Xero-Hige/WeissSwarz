@@ -1,5 +1,7 @@
 __author__ = 'hige'
 
+from cards import Card, CharacterCard, ClimaxCard
+
 
 class _PlayerSide(object):
     """Simulates a player field"""
@@ -27,7 +29,7 @@ class _PlayerSide(object):
 
         trigger_icon = trigger_card.triger_icon;
 
-        if (atacker_card.power > defender_card.power):
+        if atacker_card.power > defender_card.power:
             soul_points = atacker_card.soul_points
             soul_points += trigger_icon;
             another_side.get_hit(soul_points)
@@ -40,18 +42,18 @@ class _PlayerSide(object):
 
         # Choice
         selected_card = self.clock.pop(-1)
-        #Choice
+        # Choice
 
         self.level.append(selected_card)
 
         self.back_stage += self.clock
         self.clock = []
 
-    def get_hit(self,soul_points):
+    def get_hit(self, soul_points):
         damage = []
         for x in xrange(soul_points):
             damage.append(self.deck.draw_card())
-            if isinstance(damage[-1],Climax_Card):
+            if isinstance(damage[-1], Climax_Card):
                 for card in damage:
                     self.waiting_room.append(card)
                 return
@@ -60,7 +62,6 @@ class _PlayerSide(object):
 
         if len(self.clock >= 7):
             self.level_up()
-
 
     def destroy(card_number):
 
@@ -104,33 +105,6 @@ class Deck(object):
     def draw_card(self):
         """ Draws a card from the deck """
         return self.cards.pop()
-
-
-class Card(object):
-    """ Simulates a card  """
-
-    def __init__(self, name, color, trigger_icon, hability):
-        self.name = name
-        self.color = color
-        self.trigger_icon = trigger_icon
-        self.hability = hability
-
-
-class CharacterCard(Card):
-    """Simulates a character card"""
-
-    def __init__(self, name, color, trigger_icon, hability, level, cost, power, soul_points, trait):
-        """ Creates a card with the info  """
-        super(self.__class__, self).__init__(name, color, trigger_icon, hability)
-        self.level = level
-        self.cost = cost
-        self.power = power
-        self.soul_points = soul_points
-        self.trait = trait
-
-class ClimaxCard(Card):
-    """ """
-    pass
 
 
 class Player(object):
