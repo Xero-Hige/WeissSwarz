@@ -86,6 +86,14 @@ class _PlayerSide(object):
         self.deck.shuffle()
         self.waiting_room = []
 
+    def get_clock_level(self):
+        """ """
+        return len(self.clock)
+
+    def clocking(self, card):
+        self.clock.append(card)
+        return self.draw(2)
+
 
 class GameBoard(object):
     """Simulates the gameboard"""
@@ -96,12 +104,14 @@ class GameBoard(object):
         # White (Weiss)
         self.weiss = _PlayerSide()
 
+        # Black (Schwarz)
         self.schwarz = _PlayerSide()
 
     def atack(self, side, atacker, defender):
         """ TODO: """
         if side == WEISS_SIDE:
             self.weiss.atack(atacker, defender, self.schwarz)
+
         elif side == SCHWARZ_SIDE:
             self.schwarz.atack(atacker, defender, self.weiss)
 
@@ -109,5 +119,20 @@ class GameBoard(object):
         """ """
         if side == WEISS_SIDE:
             return self.weiss.draw(amount)
+
         elif side == SCHWARZ_SIDE:
             return self.schwarz.draw(amount)
+
+    def get_clock_level(self, side):
+        if side == WEISS_SIDE:
+            return self.weiss.get_clock_level()
+
+        elif side == SCHWARZ_SIDE:
+            return self.schwarz.get_clock_level()
+
+    def clocking(self, side, card):
+        if side == WEISS_SIDE:
+            return self.weiss.clocking(card)
+
+        elif side == SCHWARZ_SIDE:
+            return self.schwarz.clocking(card)
