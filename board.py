@@ -1,7 +1,10 @@
+SCHWARZ_SIDE = "schwarz"
+WEISS_SIDE = "weiss"
 __author__ = 'hige'
 
 from deck import Deck
 from cards import ClimaxCard
+
 
 class _PlayerSide(object):
     """Simulates a player field"""
@@ -66,6 +69,22 @@ class _PlayerSide(object):
     def destroy(card_number):
         pass
 
+    def draw(self,amount):
+        """ """
+        cards = []
+        while (not self.deck.is_empty()) and (amount<len(cards)):
+            cards.append(self.deck.draw_card())
+
+        if self.deck.is_empty():
+            self.refill_deck()
+
+    def refill_deck(self):
+        """ """
+        self.deck.add_cards(self.waiting_room)
+        self.deck.shuffle()
+        self.waiting_room = []
+
+
 class GameBoard(object):
     """Simulates the gameboard"""
 
@@ -78,13 +97,15 @@ class GameBoard(object):
         self.schwarz = _PlayerSide()
 
     def atack(self, side, atacker, defender):
-        """ TODO:
-        :param side:
-        :param atacker:
-        :param defender:
-        :return:
-        """
-        if side == "weiss":
+        """ TODO: """
+        if side == WEISS_SIDE:
             self.weiss.atack(atacker, defender, self.schwarz)
-        else:
+        elif side == SCHWARZ_SIDE:
             self.schwarz.atack(atacker, defender, self.weiss)
+
+    def draw(self, side, amount=1):
+        """ """
+        if side == WEISS_SIDE:
+            self.weiss.draw(amount)
+        elif side == SCHWARZ_SIDE:
+            self.schwarz.draw(amount)

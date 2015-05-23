@@ -1,12 +1,10 @@
+from board import GameBoard
+import board
+
 __author__ = 'hige'
 
-from cards import Card, CharacterCard, ClimaxCard
+#Board creation
+gameboard = GameBoard()
 
-class Player(object):
-    """ Encapsulates the player behavior """
-    pass
-
-
-board = GameBoard()
-deck = Deck("swartz")
-card = deck.draw_card()
+#first turn
+player1_hand = gameboard.draw(board.SCHWARZ_SIDE,5)
