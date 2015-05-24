@@ -6,65 +6,85 @@ from cards import CharacterCard
 import pygame
 
 pygame.init()
-w=448
-h=626
-screen = pygame.display.set_mode((w,h))
+w = 448
+h = 626
+screen = pygame.display.set_mode((w, h))
 
 
-def main():
-    card = CharacterCard("Elegant Lily", "yellow", 0, None, 2, 1, 2000, 1, ("Warrior", "Mage"))
+def render_card(card):
 
     image_file = card.name.replace(' ', '_') + ".png"
+
     layout_file = card.get_color()[0] + str(card.soul_points) + "s.png"
+
     if card.get_level() != 0:
-        level_file = card.get_color()[0] +"l" + str(card.get_level())+ ".png"
+        level_file = card.get_color()[0] + "l" + str(card.get_level()) + ".png"
     else:
         level_file = "l0.png"
 
     cost_file = "c" + str(card.get_cost()) + ".png"
-
-    image = pygame.image.load("resources/card_images/"+image_file)
-
-    i_w,i_h = image.get_size()
-
+    image = pygame.image.load("resources/card_images/" + image_file)
+    i_w, i_h = image.get_size()
     if i_w > i_h:
-        i_w = h*i_w/i_h
+        i_w = h * i_w / i_h
         i_h = h
         if (i_w < w):
-            i_h = w*i_h/i_w
+            i_h = w * i_h / i_w
             i_w = w
 
-
     else:
-        i_h = w*i_h/i_w
+        i_h = w * i_h / i_w
         i_w = w
-        if(i_h < h):
-            i_w = h*i_w/i_h
+        if (i_h < h):
+            i_w = h * i_w / i_h
             i_h = h
 
+    image = pygame.transform.scale(image, (i_w, i_h))
+    horizontal_adjust = (w - i_w) / 2
+    vertical_adjust = (h - i_h) / 2
 
+    screen.blit(image, (horizontal_adjust, vertical_adjust))
 
-    image = pygame.transform.scale(image,(i_w,i_h))
+    image = pygame.image.load("resources/card_layouts/character/" + layout_file)
+    screen.blit(image, (0, 0))
 
-    horizontal_adjust = (w-i_w)/2
-    vertical_adjust = (h-i_h)/2
+    image = pygame.image.load("resources/card_layouts/level/" + level_file)
+    screen.blit(image, (0, 0))
 
-    screen.blit(image,(horizontal_adjust,vertical_adjust))
+    image = pygame.image.load("resources/card_layouts/cost/" + cost_file)
+    screen.blit(image, (0, 60))
 
-    image = pygame.image.load("resources/card_layouts/character/"+layout_file)
-    screen.blit(image,(0,0))
+    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 27)
 
-    image = pygame.image.load("resources/card_layouts/level/"+level_file)
-    screen.blit(image,(0,0))
+    label = myfont.render(str(card.name), 1, (255, 255, 255))
+    center_horizontal = 115 + ((435 - 155) - label.get_size()[0]) / 2
+    screen.blit(label, (center_horizontal, 554))  # Min 155 - Max 350 || #Min 555 - Max 575
 
-    image = pygame.image.load("resources/card_layouts/cost/"+cost_file)
-    screen.blit(image,(0,60))
+    label = myfont.render(str(card.power), 1, (255, 255, 255))
+    center_horizontal = 32 + ((116 - 32) - label.get_size()[0]) / 2
+    screen.blit(label, (center_horizontal, 567))  # Min 32 - Max 116
+
+    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 11)
+    trait_x = 212
+    for trait in card.trait:
+        label = myfont.render(trait, 1, (0,0,0))
+        center_horizontal = trait_x + (90 - label.get_size()[0]) / 2
+        screen.blit(label, (center_horizontal, 587))
+        trait_x += 100
 
     pygame.display.flip()
 
 
-    sleep(10)
+def main():
+    cards = []
+    cards.append(CharacterCard("Shiro", "green", 0, None, 0, 0, 1000, 1, ("Warrior", "Mage")))
+    cards.append(CharacterCard("Illya", "blue", 0, None, 1, 1, 5500, 1, ("Mage", "Loli")))
+    cards.append(CharacterCard("Archer", "red", 0, None, 2, 0, 8000, 1, ("Archer", "Heroic")))
+    cards.append(CharacterCard("Elegant Lily", "yellow", 0, None, 2, 2, 11000, 2, ("Warrior", "Heroic")))
 
+    for card in cards:
+        render_card(card)
+        sleep(10)
 
 
 main()
