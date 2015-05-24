@@ -2,7 +2,7 @@ from time import sleep
 
 __author__ = 'hige'
 
-from cards import CharacterCard
+from cards import CharacterCard, ClimaxCard
 import pygame
 
 pygame.init()
@@ -14,9 +14,8 @@ CLIMAX_HEIGHT = 448
 
 
 def generate_character_image(card):
-
-    result = pygame.Surface((CHARACTER_WIDTH,CHARACTER_HEIGHT))
-    result.fill((255,255,255))
+    result = pygame.Surface((CHARACTER_WIDTH, CHARACTER_HEIGHT))
+    result.fill((255, 255, 255))
 
     image_file = card.get_name().replace(' ', '_') + ".png"
 
@@ -62,13 +61,13 @@ def generate_character_image(card):
     trigger_icon = card.get_trigger_icon()
     if trigger_icon == 0:
         image = pygame.image.load("resources/card_layouts/triggers/none.png")
-        result.blit(image, (CHARACTER_WIDTH-image.get_size()[0],0))
+        result.blit(image, (CHARACTER_WIDTH - image.get_size()[0], 0))
     else:
         image = pygame.image.load("resources/card_layouts/triggers/soul.png")
-        result.blit(image, (CHARACTER_WIDTH-image.get_size()[0],0))
+        result.blit(image, (CHARACTER_WIDTH - image.get_size()[0], 0))
 
         if trigger_icon == 2:
-            result.blit(image, (CHARACTER_WIDTH-image.get_size()[0]*2,0))
+            result.blit(image, (CHARACTER_WIDTH - image.get_size()[0] * 2, 0))
 
     myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 27)
 
@@ -88,23 +87,34 @@ def generate_character_image(card):
         result.blit(label, (center_horizontal, 587))
         trait_x += 100
 
+    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
+
+    labels = []
+    for line in card.get_flavor_text().split('\n'):
+        labels.append(myfont.render(line, 1, (0, 0, 0)))
+
+    line_height = labels[0].get_size()[1]
+
+    text_box = pygame.Surface((CHARACTER_WIDTH - CHARACTER_WIDTH / 8, line_height * len(labels)), pygame.SRCALPHA)
+    text_box.fill((255, 255, 255, 150))
+    position = 550
+    result.blit(text_box, (CHARACTER_WIDTH / 16, position - text_box.get_size()[1]))
+
+    for label in labels[::-1]:
+        position -= line_height
+        result.blit(label, (CHARACTER_WIDTH / 16, position))
+
     return result
 
-def generate_climax_image(card):
 
-    result = pygame.Surface((CLIMAX_WIDTH,CLIMAX_HEIGHT))
-    result.fill((255,255,255))
+def generate_climax_image(card):
+    result = pygame.Surface((CLIMAX_WIDTH, CLIMAX_HEIGHT))
+    result.fill((255, 255, 255))
 
     image_file = card.get_name().replace(' ', '_') + ".png"
 
-    layout_file = card.get_color()+".png"
+    layout_file = card.get_color() + ".png"
 
-    if card.get_level() != 0:
-        level_file = card.get_color()[0] + "l" + str(card.get_level()) + ".png"
-    else:
-        level_file = "l0.png"
-
-    cost_file = "c" + str(card.get_cost()) + ".png"
     image = pygame.image.load("resources/card_images/" + image_file)
     i_w, i_h = image.get_size()
     if i_w > i_h:
@@ -133,59 +143,63 @@ def generate_climax_image(card):
     trigger_icon = card.get_trigger_icon()
     if trigger_icon == 0:
         image = pygame.image.load("resources/card_layouts/triggers/none.png")
-        image = pygame.transform.rotate(image,90)
-        result.blit(image, (0,0))
+        image = pygame.transform.rotate(image, 90)
+        result.blit(image, (0, 0))
     else:
         image = pygame.image.load("resources/card_layouts/triggers/soul.png")
-        image = pygame.transform.rotate(image,90)
-        result.blit(image, (0,0))
+        image = pygame.transform.rotate(image, 90)
+        result.blit(image, (0, 0))
 
         if trigger_icon == 2:
-            result.blit(image, (0,image.get_size()[1]))
+            result.blit(image, (0, image.get_size()[1]))
 
     myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 22)
 
     label = myfont.render(str(card.get_name()), 1, (255, 255, 255))
-    center_horizontal = 115 + ((435 - 155) - label.get_size()[0]) / 2
-    result.blit(label, (380, 394))  # Min 155 - Max 350 || #Min 555 - Max 575
+    center_horizontal = 380 + ((580 - 380) - label.get_size()[0]) / 2
+    result.blit(label, (center_horizontal, 394))
 
-    label = myfont.render(str(card.get_power()), 1, (255, 255, 255))
-    center_horizontal = 32 + ((116 - 32) - label.get_size()[0]) / 2
-    result.blit(label, (center_horizontal, 567))  # Min 32 - Max 116
+    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
 
-    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 11)
-    trait_x = 212
-    for trait in card.get_traits():
-        label = myfont.render(trait, 1, (0, 0, 0))
-        center_horizontal = trait_x + (90 - label.get_size()[0]) / 2
-        result.blit(label, (center_horizontal, 587))
-        trait_x += 100
+    labels = []
+    for line in card.get_flavor_text().split('\n'):
+        labels.append(myfont.render(line, 1, (0, 0, 0)))
+
+    line_height = labels[0].get_size()[1]
+
+    text_box = pygame.Surface((339, line_height * len(labels)), pygame.SRCALPHA)
+    text_box.fill((255, 255, 255, 150))
+    position = 390
+    result.blit(text_box, (CLIMAX_WIDTH - 372, position - text_box.get_size()[1]))
+
+    for label in labels[::-1]:
+        position -= line_height
+        result.blit(label, (CLIMAX_WIDTH  - 372, position))
 
     return result
 
+
 def main():
     cards = []
-    #cards.append(CharacterCard("Illya", "blue", 0, None, 1, 1, 5500, 1, ("Mage", "Loli")))
-    #cards.append(CharacterCard("Archer", "red", 1, None, 2, 0, 8000, 1, ("Archer", "Heroic")))
-    cards.append(CharacterCard("Elegant Lily", "yellow", 2, None, 2, 2, 11000, 2, ("Warrior", "Heroic")))
-    #cards.append(CharacterCard("Shiro", "green", 1, None, 0, 0, 1000, 1, ("Warrior", "Mage")))
+    cards.append(CharacterCard("Illya", "blue", 0, None,"\"Good night\"", 1, 1, 5500, 1, ("Mage", "Loli")))
+    cards.append(CharacterCard("Archer", "red", 1, None,"\"But it's all a fake. Such hypocrisy cannot save anything.\nNo, first of all, I did not know what I wanted to save!\"", 2, 0, 8000, 1, ("Archer", "Heroic")))
+    cards.append(CharacterCard("Elegant Lily", "yellow", 2, None, "\"Even if he is not a Master, our contract will not go away.\nI have sworn to protect him and to be his sword.\"", 2, 2, 11000, 2, ("Warrior", "Heroic")))
+    cards.append(CharacterCard("Shiro", "green", 1, None,"\"People die when they are killed\"", 0, 0, 1000, 1, ("Warrior", "Mage")))
 
 
     screen = pygame.display.set_mode((CHARACTER_WIDTH, CHARACTER_HEIGHT))
 
     for card in cards:
         card_image = generate_character_image(card)
-        screen.blit(card_image,(0,0))
+        screen.blit(card_image, (0, 0))
         pygame.display.flip()
         sleep(2)
 
     pygame.display.set_mode((CLIMAX_WIDTH, CLIMAX_HEIGHT))
 
-    card_image = generate_climax_image(CharacterCard("Illya", "red", 2, None, 2, 2, 5500, 2, ("Mage", "Loli")))
-    screen.blit(card_image,(0,0))
+    card_image = generate_climax_image(ClimaxCard("A fated encounter", "red", 2, None, "\"I'm not scared anymore even though it's dark.\n You're strong, Berserker.\n I'm safe if you're there like that.\""))
+    screen.blit(card_image, (0, 0))
     pygame.display.flip()
     sleep(2)
-
-
 
 main()
