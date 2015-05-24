@@ -1,6 +1,56 @@
 __author__ = 'hige'
 
 
+class Ability(object):
+
+    def __init__(self):
+        """ """
+        self.ability_base_text = "ABILITY:\n"
+
+
+    def apply_on_card(self,card):
+        pass
+
+    def apply_on_board(self,gameboard):
+        pass
+
+    def revert_on_card(self,card):
+        pass
+
+    def revert_on_board(self,gameboard):
+        pass
+
+    def get_text(self):
+        pass
+
+class PowerModifyAbility(Ability):
+
+    def __init__(self,power_modify):
+        self.modify = power_modify
+
+    def apply_on_card(self,card):
+        card.power += self.modify
+
+    def get_text(self):
+        text = self.ability_base_text
+        if (self.modify > 0):
+            text += "Increments "
+        else:
+            text += "Reduces "
+
+        text += "character power points in " + str(abs(self.modify))
+
+
+class TemporalModifyAbility(PowerModifyAbility):
+
+    def revert_on_card(self,card):
+        card.power -= self.modify
+
+    def get_text(self):
+        return super(self.__class__, self).__str__()+" during this turn"
+
+
+
 class Card(object):
     """ Simulates a card  """
 
