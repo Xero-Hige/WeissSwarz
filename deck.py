@@ -32,6 +32,9 @@ class Deck(object):
             self.cards.append(EventCard("Wounded charge", "blue", 0, None,
                                         "Believe it till the end, i won't go away\nAnd won't say never", 1, 2))
 
+            self.cards.append(EventCard("Heroine rush", "blue", 2, None,
+                                        "Why is Sakura the \"true ending?\"\n-Rin-", 0, 1))
+
             self.cards.append(ClimaxCard("A fated encounter", "red", 1, None,
                                          "\"I'm not scared anymore even though it's dark.\n You're strong, Berserker.\n I'm safe if you're there like that.\""))
 
