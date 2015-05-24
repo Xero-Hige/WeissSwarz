@@ -61,7 +61,7 @@ class CharacterCard(Card):
 class EventCard(Card):
     """Simulates a character card"""
 
-    def __init__(self, name, color, trigger_icon, ability, flavor_text, level, cost, power, soul_points, traits):
+    def __init__(self, name, color, trigger_icon, ability, flavor_text, level, cost):
         """ Creates a card with the info  """
         super(self.__class__, self).__init__(name, color, trigger_icon, ability, flavor_text)
         self.level = level
