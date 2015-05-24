@@ -46,7 +46,7 @@ class _PlayerSide(object):
             soul_points = atacker_card.soul_points
             soul_points += trigger_icon + 1
             another_side.get_hit(soul_points)
-            return
+            return trigger_card
 
         if atacker_card.power < defender_card.power:
             self.destroy(atacker)
@@ -59,6 +59,7 @@ class _PlayerSide(object):
             soul_points += trigger_icon
             another_side.get_hit(soul_points)
 
+        return trigger_card #TODO: Ver
 
     def level_up(self):
 
@@ -187,10 +188,10 @@ class GameBoard(object):
     def atack(self, side, atacker, defender):
         """ TODO: """
         if side == WEISS_SIDE:
-            self.weiss.atack(atacker, defender, self.schwarz)
+            return self.weiss.atack(atacker, defender, self.schwarz)
 
         elif side == SCHWARZ_SIDE:
-            self.schwarz.atack(atacker, defender, self.weiss)
+            return self.schwarz.atack(atacker, defender, self.weiss)
 
     def draw(self, side, amount=1):
         """ """

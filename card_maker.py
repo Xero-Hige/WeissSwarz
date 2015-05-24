@@ -282,7 +282,6 @@ def show_card(card,text="",showtime=2):
     pygame.display.flip()
     sleep(showtime)
 
-
 def main():
     cards = []
     cards.append(CharacterCard("Illya", "blue", 0, None, "\"Good night\"", 1, 1, 5500, 1, ("Mage", "Loli")))
