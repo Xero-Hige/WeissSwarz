@@ -12,10 +12,9 @@ screen = pygame.display.set_mode((w, h))
 
 
 def render_card(card):
+    image_file = card.get_name().replace(' ', '_') + ".png"
 
-    image_file = card.name.replace(' ', '_') + ".png"
-
-    layout_file = card.get_color()[0] + str(card.soul_points) + "s.png"
+    layout_file = card.get_color()[0] + str(card.get_soul_points()) + "s.png"
 
     if card.get_level() != 0:
         level_file = card.get_color()[0] + "l" + str(card.get_level()) + ".png"
@@ -66,8 +65,8 @@ def render_card(card):
 
     myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 11)
     trait_x = 212
-    for trait in card.trait:
-        label = myfont.render(trait, 1, (0,0,0))
+    for trait in card.get_traits():
+        label = myfont.render(trait, 1, (0, 0, 0))
         center_horizontal = trait_x + (90 - label.get_size()[0]) / 2
         screen.blit(label, (center_horizontal, 587))
         trait_x += 100
