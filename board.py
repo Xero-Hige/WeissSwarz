@@ -42,16 +42,23 @@ class _PlayerSide(object):
 
         trigger_icon = trigger_card.get_trigger_icon()
 
+        if not defender_card:
+            soul_points = atacker_card.soul_points
+            soul_points += trigger_icon + 1
+            another_side.get_hit(soul_points)
+            return
 
+        if atacker_card.power < defender_card.power:
+            self.destroy(atacker)
+
+        if atacker_card.power >= defender_card.power:
+            another_side.destroy(defender)
 
         if atacker_card.power > defender_card.power:
             soul_points = atacker_card.soul_points
             soul_points += trigger_icon
             another_side.get_hit(soul_points)
-            another_side.destroy(defender)
 
-        elif atacker_card.power < defender_card.power:
-            self.destroy(atacker)
 
     def level_up(self):
 
