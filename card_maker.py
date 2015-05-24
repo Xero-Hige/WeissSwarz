@@ -261,6 +261,28 @@ def generate_climax_image(card):
     return result
 
 
+def show_card(card,text="",showtime=2):
+    if isinstance(card, ClimaxCard):
+        screen = pygame.display.set_mode((CLIMAX_WIDTH, CLIMAX_HEIGHT))
+        card_image = generate_climax_image(card)
+
+    elif isinstance(card, CharacterCard):
+        screen = pygame.display.set_mode((CHARACTER_WIDTH, CHARACTER_HEIGHT))
+        card_image = generate_character_image(card)
+
+    elif isinstance(card, EventCard):
+        screen = pygame.display.set_mode((CHARACTER_WIDTH, CHARACTER_HEIGHT))
+        card_image = generate_event_image(card)
+
+    else:
+        raise TypeError , "Eso no es una carta, no se puede mostrar"
+
+    screen.blit(card_image, (0, 0))
+    pygame.display.set_caption(text)
+    pygame.display.flip()
+    sleep(showtime)
+
+
 def main():
     cards = []
     cards.append(CharacterCard("Illya", "blue", 0, None, "\"Good night\"", 1, 1, 5500, 1, ("Mage", "Loli")))
@@ -299,5 +321,5 @@ def main():
     pygame.display.flip()
     sleep(2)
 
-
-main()
+if __name__ == "__main__":
+    main()

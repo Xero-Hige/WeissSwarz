@@ -2,6 +2,7 @@ import random
 
 from board import GameBoard
 import board
+import card_maker
 
 __author__ = 'hige'
 
@@ -13,11 +14,13 @@ def clocking(gameboard, player, side):
     card = random.choice(player)
     player.remove(card)
     print "During clocking"
+    card_maker.show_card(card,"Card to clock",4)
     print "Card to clock:", card
     print player
     cards = gameboard.clocking(side, card)
     player += cards
-    print "Draw cards:", cards
+    for card in cards:
+        card_maker.show_card(card,"Drew cards")
     print "After clocking"
     print player
     print "Clock level:", gameboard.get_clock_level(side)
@@ -27,10 +30,10 @@ def play_character(gameboard, player, side):
     card = random.choice(player)
     player.remove(card)
     if gameboard.can_be_played(side, card):
-        print "Can play:", card
+        card_maker.show_card(card,"Can play:",4)
         gameboard.play_character(side, card, board.FRONT_STAGE, board.FRONT_LEFT)
     else:
-        print "Can't play: ", card
+        card_maker.show_card(card,"Can't play:",4)
         player.append(card)
 
 
