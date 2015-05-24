@@ -14,11 +14,11 @@ class Deck(object):
         self.cards = []
 
         for x in range(4):
-            self.cards.append(CharacterCard("Archer", "Red", 0, None, 0, 0, 2000, 1, ("Warrior", "Heroic")))
-            self.cards.append(CharacterCard("Shiro", "Blue", 0, None, 0, 0, 2000, 1, ("Warrior", "Mage")))
-            self.cards.append(CharacterCard("Saber", "Yellow", 0, None, 0, 0, 2000, 1, ("Warrior", "Heroic")))
-            self.cards.append(CharacterCard("Caster", "Blue", 0, None, 0, 0, 2000, 1, ("Mage", "Heroic")))
-            self.cards.append(CharacterCard("Rider", "Green", 0, None, 0, 0, 2000, 1, ("Warrior", "Heroic")))
+            self.cards.append(CharacterCard("Archer", "Red", 0, None,"", 0, 0, 2000, 1, ("Warrior", "Heroic")))
+            self.cards.append(CharacterCard("Shiro", "Blue", 0, None,"", 0, 0, 2000, 1, ("Warrior", "Mage")))
+            self.cards.append(CharacterCard("Saber", "Yellow", 0, None,"", 0, 0, 2000, 1, ("Warrior", "Heroic")))
+            self.cards.append(CharacterCard("Caster", "Blue", 0, None,"", 0, 0, 2000, 1, ("Mage", "Heroic")))
+            self.cards.append(CharacterCard("Rider", "Green", 0, None,"", 0, 0, 2000, 1, ("Warrior", "Heroic")))
 
         self.shuffle()
 

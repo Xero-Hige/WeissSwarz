@@ -4,11 +4,12 @@ __author__ = 'hige'
 class Card(object):
     """ Simulates a card  """
 
-    def __init__(self, name, color, trigger_icon, hability):
+    def __init__(self, name, color, trigger_icon, ability, flavor_text):
         self.name = name
         self.color = color
         self.trigger_icon = trigger_icon
-        self.hability = hability
+        self.hability = ability
+        self.flavor_text = flavor_text
 
     def __str__(self):
         return self.name + "(" + self.color + ")"
@@ -25,13 +26,16 @@ class Card(object):
     def get_name(self):
         return self.name
 
+    def get_flavor_text(self):
+        return self.flavor_text
+
 
 class CharacterCard(Card):
     """Simulates a character card"""
 
-    def __init__(self, name, color, trigger_icon, hability, level, cost, power, soul_points, traits):
+    def __init__(self, name, color, trigger_icon, ability, flavor_text, level, cost, power, soul_points, traits):
         """ Creates a card with the info  """
-        super(self.__class__, self).__init__(name, color, trigger_icon, hability)
+        super(self.__class__, self).__init__(name, color, trigger_icon, ability, flavor_text)
         self.level = level
         self.cost = cost
         self.power = power
@@ -53,6 +57,21 @@ class CharacterCard(Card):
     def get_traits(self):
         return self.traits
 
+
+class EventCard(Card):
+    """Simulates a character card"""
+
+    def __init__(self, name, color, trigger_icon, ability, flavor_text, level, cost, power, soul_points, traits):
+        """ Creates a card with the info  """
+        super(self.__class__, self).__init__(name, color, trigger_icon, ability, flavor_text)
+        self.level = level
+        self.cost = cost
+
+    def get_level(self):
+        return self.level
+
+    def get_cost(self):
+        return self.cost
 
 class ClimaxCard(Card):
     """ """
