@@ -53,6 +53,17 @@ def render_card(card):
     image = pygame.image.load("resources/card_layouts/cost/" + cost_file)
     screen.blit(image, (0, 60))
 
+    trigger_icon = card.get_trigger_icon()
+    if trigger_icon == 0:
+        image = pygame.image.load("resources/card_layouts/triggers/none.png")
+        screen.blit(image, (w-image.get_size()[0],0))
+    else:
+        image = pygame.image.load("resources/card_layouts/triggers/soul.png")
+        screen.blit(image, (w-image.get_size()[0],0))
+
+        if trigger_icon == 2:
+            screen.blit(image, (w-image.get_size()[0],image.get_size()[1]))
+
     myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 27)
 
     label = myfont.render(str(card.name), 1, (255, 255, 255))
@@ -76,10 +87,10 @@ def render_card(card):
 
 def main():
     cards = []
-    cards.append(CharacterCard("Shiro", "green", 0, None, 0, 0, 1000, 1, ("Warrior", "Mage")))
+    cards.append(CharacterCard("Shiro", "green", 1, None, 0, 0, 1000, 1, ("Warrior", "Mage")))
     cards.append(CharacterCard("Illya", "blue", 0, None, 1, 1, 5500, 1, ("Mage", "Loli")))
-    cards.append(CharacterCard("Archer", "red", 0, None, 2, 0, 8000, 1, ("Archer", "Heroic")))
-    cards.append(CharacterCard("Elegant Lily", "yellow", 0, None, 2, 2, 11000, 2, ("Warrior", "Heroic")))
+    cards.append(CharacterCard("Archer", "red", 1, None, 2, 0, 8000, 1, ("Archer", "Heroic")))
+    cards.append(CharacterCard("Elegant Lily", "yellow", 2, None, 2, 2, 11000, 2, ("Warrior", "Heroic")))
 
     for card in cards:
         render_card(card)
