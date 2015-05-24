@@ -104,6 +104,22 @@ def generate_character_image(card):
         position -= line_height
         result.blit(label, (CHARACTER_WIDTH / 16, position))
 
+    if (card.get_ability()):
+        labels = []
+        for line in card.get_ability().get_text().split('\n'):
+            labels.append(myfont.render(line, 1, (0, 0, 0)))
+
+        line_height = labels[0].get_size()[1]
+
+        text_box = pygame.Surface((CHARACTER_WIDTH - CHARACTER_WIDTH / 8, line_height * len(labels)), pygame.SRCALPHA)
+        text_box.fill((255, 255, 255, 150))
+        position -= 5
+        result.blit(text_box, (CHARACTER_WIDTH / 16, position - text_box.get_size()[1]))
+
+        for label in labels[::-1]:
+            position -= line_height
+            result.blit(label, (CHARACTER_WIDTH / 16, position))
+
     return result
 
 
@@ -186,6 +202,22 @@ def generate_event_image(card):
         position -= line_height
         result.blit(label, (CHARACTER_WIDTH / 16, position))
 
+    if (card.get_ability()):
+        labels = []
+        for line in card.get_ability().get_text().split('\n'):
+            labels.append(myfont.render(line, 1, (0, 0, 0)))
+
+        line_height = labels[0].get_size()[1]
+
+        text_box = pygame.Surface((CHARACTER_WIDTH - CHARACTER_WIDTH / 8, line_height * len(labels)), pygame.SRCALPHA)
+        text_box.fill((255, 255, 255, 150))
+        position -= 5
+        result.blit(text_box, (CHARACTER_WIDTH / 16, position - text_box.get_size()[1]))
+
+        for label in labels[::-1]:
+            position -= line_height
+            result.blit(label, (CHARACTER_WIDTH / 16, position))
+
     return result
 
 
@@ -257,6 +289,23 @@ def generate_climax_image(card):
     for label in labels[::-1]:
         position -= line_height
         result.blit(label, (CLIMAX_WIDTH - 372, position))
+
+    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 12)
+
+    labels = []
+    for line in card.get_ability().get_text().split('\n'):
+        labels.append(myfont.render(line, 1, (0, 0, 0)))
+
+    line_height = labels[0].get_size()[1]
+
+    text_box = pygame.Surface((225, line_height * len(labels)), pygame.SRCALPHA)
+    text_box.fill((255, 255, 255, 150))
+    position = 445
+    result.blit(text_box, (8, position - text_box.get_size()[1]))
+
+    for label in labels[::-1]:
+        position -= line_height
+        result.blit(label, (10, position))
 
     return result
 

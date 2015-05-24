@@ -5,8 +5,6 @@ class Ability(object):
 
     def __init__(self):
         """ """
-        self.ability_base_text = "ABILITY:\n"
-
 
     def apply_on_card(self,card):
         pass
@@ -20,6 +18,9 @@ class Ability(object):
     def revert_on_board(self,gameboard):
         pass
 
+    def _get_base_text(self):
+        return "ABILITY:\n"
+
     def get_text(self):
         pass
 
@@ -32,13 +33,14 @@ class PowerModifyAbility(Ability):
         card.power += self.modify
 
     def get_text(self):
-        text = self.ability_base_text
+        text = self._get_base_text()
         if (self.modify > 0):
             text += "Increments "
         else:
             text += "Reduces "
 
         text += "character power points in " + str(abs(self.modify))
+        return text
 
 
 class TemporalModifyAbility(PowerModifyAbility):
@@ -47,7 +49,7 @@ class TemporalModifyAbility(PowerModifyAbility):
         card.power -= self.modify
 
     def get_text(self):
-        return super(self.__class__, self).__str__()+" during this turn"
+        return super(self.__class__, self).get_text()+" during this turn"
 
 
 
@@ -58,7 +60,7 @@ class Card(object):
         self.name = name
         self.color = color
         self.trigger_icon = trigger_icon
-        self.hability = ability
+        self.ability = ability
         self.flavor_text = flavor_text
 
     def __str__(self):
@@ -78,6 +80,9 @@ class Card(object):
 
     def get_flavor_text(self):
         return self.flavor_text
+
+    def get_ability(self):
+        return self.ability
 
 
 class CharacterCard(Card):
