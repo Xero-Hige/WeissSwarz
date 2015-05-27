@@ -41,7 +41,10 @@ def main():
 
         interface.show_info(str(drew_card), "Carta robada: ")
 
+        # Show hand
+
         # Clocking
+
 
         # Play cards
 
