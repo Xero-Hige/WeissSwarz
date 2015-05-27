@@ -1,3 +1,5 @@
+import tkMessageBox
+
 __author__ = 'hige'
 
 from Tkinter import Tk
@@ -14,3 +16,6 @@ class WindowInterface(object):
             return tkSimpleDialog.askinteger(title, message, parent=self.tk_window)
         return tkSimpleDialog.askinteger(title, message, parent=self.tk_window, minvalue=number_range[0],
                                          maxvalue=number_range[1])
+
+    def show_info(self, message, title=""):
+        tkMessageBox.askquestion(title, message, type=tkMessageBox.OK)
