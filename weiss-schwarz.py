@@ -1,6 +1,7 @@
 import random
 
 import board
+from interface import WindowInterface
 
 __author__ = 'hige'
 
@@ -11,10 +12,11 @@ def main():
     """ """
 
     player_index = random.choice([0, 1])
-    gameboard = board.GameBoard(None)
+    interface = WindowInterface()
+    gameboard = board.GameBoard(interface)
 
     while not gameboard.get_winner():
-        print "a"
+        interface.get_integer("Carta a jugar", "Jugar desde la mano", [0, 5])
 
 
 main()

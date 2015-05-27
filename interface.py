@@ -11,6 +11,6 @@ class WindowInterface(object):
     def get_integer(self, message, title="", number_range=[]):
         """ """
         if not number_range:
-            return tkSimpleDialog.askstring(title, message, parent=self.tk_window)
-        return tkSimpleDialog.askstring(title, message, parent=self.tk_window, minvalue=number_range[0],
-                                        maxvalue=number_range[1])
+            return tkSimpleDialog.askinteger(title, message, parent=self.tk_window)
+        return tkSimpleDialog.askinteger(title, message, parent=self.tk_window, minvalue=number_range[0],
+                                         maxvalue=number_range[1])
