@@ -59,7 +59,7 @@ class _PlayerSide(object):
             soul_points += trigger_icon
             another_side.get_hit(soul_points)
 
-        return trigger_card #TODO: Ver
+        return trigger_card  # TODO: Ver
 
     def level_up(self):
 
@@ -176,7 +176,7 @@ class _PlayerSide(object):
 class GameBoard(object):
     """Simulates the gameboard"""
 
-    def __init__(self):
+    def __init__(self, interface):
         """Creates an empty gameboard"""
 
         # White (Weiss)
@@ -184,6 +184,8 @@ class GameBoard(object):
 
         # Black (Schwarz)
         self.schwarz = _PlayerSide()
+
+        self.interface_handler = interface
 
     def atack(self, side, atacker, defender):
         """ TODO: """
@@ -200,6 +202,13 @@ class GameBoard(object):
 
         elif side == SCHWARZ_SIDE:
             return self.schwarz.draw(amount)
+
+    def get_side_level(self, side):
+        if side == WEISS_SIDE:
+            return self.weiss.get_side_level()
+
+        elif side == SCHWARZ_SIDE:
+            return self.schwarz.get_side_level()
 
     def get_clock_level(self, side):
         if side == WEISS_SIDE:
@@ -228,3 +237,10 @@ class GameBoard(object):
 
         elif side == SCHWARZ_SIDE:
             return self.schwarz.play_character(card, stage, position)
+
+    def get_winner(self):
+        if self.weiss.get_level() == 4:
+            return WEISS_SIDE
+        if self.schwarz.get_level() == 4:
+            return SCHWARZ_SIDE
+        return ""
