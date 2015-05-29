@@ -1,4 +1,6 @@
-from Tkinter import Tk
+from Tkinter import Tk, Label
+import pygame
+from time import sleep
 import tkMessageBox
 import card_maker
 
@@ -10,6 +12,7 @@ import tkSimpleDialog
 class WindowInterface(object):
     def __init__(self):
         self.tk_window = Tk()
+        self.image_label = Label();
 
     def get_integer(self, message, title="", number_range=[]):
         """ """
@@ -26,4 +29,19 @@ class WindowInterface(object):
         return result == "yes"
 
     def show_card(self, card, title=""):
-        card_maker.show_card(card, title)
+        self.image_label.destroy()
+
+        c = card_maker.generate_card_image(card)
+        from PIL import Image, ImageTk
+
+        image = Imageimage = Image.fromstring('RGBA',c.get_rect()[2:],pygame.image.tostring(c,"RGBA"))
+        photo = ImageTk.PhotoImage(image)
+
+        self.image_label = Label(image=photo)
+        self.image_label.image = photo # keep a reference!
+        self.image_label.pack()
+        self.tk_window.title(title)
+
+
+        self.tk_window.update()
+        sleep(2)
