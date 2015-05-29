@@ -309,6 +309,18 @@ def generate_climax_image(card):
 
     return result
 
+def generate_card_image(card):
+    if isinstance(card, ClimaxCard):
+        return generate_climax_image(card)
+
+    elif isinstance(card, CharacterCard):
+        return generate_character_image(card)
+
+    elif isinstance(card, EventCard):
+        return generate_event_image(card)
+
+    else:
+        raise TypeError , "Eso no es una carta, no se generar una imagen"
 
 def show_card(card,text="",showtime=2):
     if isinstance(card, ClimaxCard):
