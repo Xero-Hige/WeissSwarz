@@ -18,4 +18,8 @@ class WindowInterface(object):
                                          maxvalue=number_range[1])
 
     def show_info(self, message, title=""):
-        tkMessageBox.askquestion(title, message, type=tkMessageBox.OK)
+        tkMessageBox.askquestion(title, message, type=tkMessageBox.OK, icon="info")
+
+    def ask_yesno(self, message, title=""):
+        result = tkMessageBox.askquestion(title, message, type=tkMessageBox.YESNO)
+        return result == "yes"

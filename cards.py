@@ -2,20 +2,19 @@ __author__ = 'hige'
 
 
 class Ability(object):
-
     def __init__(self):
         """ """
 
-    def apply_on_card(self,card):
+    def apply_on_card(self, card):
         pass
 
-    def apply_on_board(self,gameboard):
+    def apply_on_board(self, gameboard):
         pass
 
-    def revert_on_card(self,card):
+    def revert_on_card(self, card):
         pass
 
-    def revert_on_board(self,gameboard):
+    def revert_on_board(self, gameboard):
         pass
 
     def _get_base_text(self):
@@ -24,12 +23,12 @@ class Ability(object):
     def get_text(self):
         pass
 
-class PowerModifyAbility(Ability):
 
-    def __init__(self,power_modify):
+class PowerModifyAbility(Ability):
+    def __init__(self, power_modify):
         self.modify = power_modify
 
-    def apply_on_card(self,card):
+    def apply_on_card(self, card):
         card.power += self.modify
 
     def get_text(self):
@@ -44,13 +43,11 @@ class PowerModifyAbility(Ability):
 
 
 class TemporalModifyAbility(PowerModifyAbility):
-
-    def revert_on_card(self,card):
+    def revert_on_card(self, card):
         card.power -= self.modify
 
     def get_text(self):
-        return super(self.__class__, self).get_text()+" during this turn"
-
+        return super(self.__class__, self).get_text() + " during this turn"
 
 
 class Card(object):
@@ -62,12 +59,6 @@ class Card(object):
         self.trigger_icon = trigger_icon
         self.ability = ability
         self.flavor_text = flavor_text
-
-    def __str__(self):
-        return self.name + "(" + self.color + ")"
-
-    def __repr__(self):
-        return self.name + "(" + self.color + ")"
 
     def get_color(self):
         return self.color
@@ -112,6 +103,12 @@ class CharacterCard(Card):
     def get_traits(self):
         return self.traits
 
+    def __str__(self):
+        return self.name + " (" + str(self.level) + "," + str(self.cost) + " " + self.color + ")"
+
+    def __repr__(self):
+        return self.name + " (" + str(self.level) + "," + str(self.cost) + " " + self.color + ")"
+
 
 class EventCard(Card):
     """Simulates a character card"""
@@ -128,6 +125,20 @@ class EventCard(Card):
     def get_cost(self):
         return self.cost
 
+    def __str__(self):
+        return self.name + " (" + str(self.level) + "," + str(self.cost) + " " + self.color + ")"
+
+    def __repr__(self):
+        return self.name + " (" + str(self.level) + "," + str(self.cost) + " " + self.color + ")"
+
+
 class ClimaxCard(Card):
     """ """
     pass
+
+
+    def __str__(self):
+        return self.name + " (" + self.color + " CLIMAX)"
+
+    def __repr__(self):
+        return self.name + " (" + self.color + " CLIMAX)"

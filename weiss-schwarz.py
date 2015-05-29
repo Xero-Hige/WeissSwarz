@@ -23,7 +23,6 @@ def main():
 
     gameboard = GameBoard(interface)
 
-
     # Generate hand
     HANDS[player_index] = gameboard.draw(TURN[player_index], 4)
     HANDS[(player_index + 1) % 2] = gameboard.draw(TURN[(player_index + 1) % 2], 4)
@@ -44,7 +43,17 @@ def main():
         # Show hand
 
         # Clocking
+        if (interface.ask_yesno("Desea clockear una carta?", "Clocking phase")):
+            cards = "Player hand:\n"
+            for i in range(len(player_hand)):
+                cards += "[" + str(i + 1) + "]" + str(player_hand[i]) + "\n"
 
+            card_to_clock = None
+            while not card_to_clock:
+                i = interface.get_integer(cards, "Choose a card to clock", [1, len(player_hand)])
+                if not interface.ask_yesno("Clock: " + str(player_hand[i - 1]) + "?", "Clocking card"):
+                    continue
+                card_to_clock = player_hand[i]
 
         # Play cards
 
