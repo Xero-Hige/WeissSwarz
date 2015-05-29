@@ -205,10 +205,10 @@ class GameBoard(object):
 
     def get_side_level(self, side):
         if side == WEISS_SIDE:
-            return self.weiss.get_side_level()
+            return self.weiss.get_level()
 
         elif side == SCHWARZ_SIDE:
-            return self.schwarz.get_side_level()
+            return self.schwarz.get_level()
 
     def get_clock_level(self, side):
         if side == WEISS_SIDE:

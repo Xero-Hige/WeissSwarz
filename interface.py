@@ -25,5 +25,5 @@ class WindowInterface(object):
         result = tkMessageBox.askquestion(title, message, type=tkMessageBox.YESNO)
         return result == "yes"
 
-    def show_card(self, card):
-        card_maker.show_card(card, "Card to clock")
+    def show_card(self, card, title=""):
+        card_maker.show_card(card, title)

@@ -11,6 +11,59 @@ TURN = [board.SCHWARZ_SIDE, board.WEISS_SIDE]
 HANDS = [[], []]
 
 
+def clocking_phase(gameboard, interface, player, player_hand):
+    if not interface.ask_yesno("Desea clockear una carta?", "Clocking phase"):
+        return
+
+    player_hand_string = "Player hand:\n"
+    for i in range(len(player_hand)):
+        player_hand_string += "[" + str(i + 1) + "]" + str(player_hand[i]) + "\n"
+
+    card_to_clock = None
+    while not card_to_clock:
+        i = interface.get_integer(player_hand_string, "Choose a card to clock", [1, len(player_hand)])
+
+        if (not i):
+            return
+
+        interface.show_card(player_hand[i - 1])
+        if not interface.ask_yesno("Clock: " + str(player_hand[i - 1]) + "?", "Clocking card"):
+            continue
+
+        card_to_clock = player_hand[i - 1]
+
+    drew_cards = gameboard.clocking(player, card_to_clock)
+    for i in range(len(drew_cards)):
+        interface.show_card(drew_cards[i], "Drew " + str(i + 1) + " Card")
+        player_hand.append(drew_cards[i])
+
+
+def main_phase(gameboard, interface, phase, player, player_hand):
+    cards = "Player hand:\n"
+    for i in range(len(player_hand)):
+        cards += str(player_hand[i]) + "\n"
+    while interface.ask_yesno(cards + "Desea jugar una carta?", phase):
+        cards = "Player hand:\n"
+        for i in range(len(player_hand)):
+            cards += "[" + str(i + 1) + "]" + str(player_hand[i]) + "\n"
+
+        card_to_play = None
+        while not card_to_play:
+            i = interface.get_integer(cards, "Choose a card to play", [1, len(player_hand)])
+
+            if (not i):
+                break
+
+            if not gameboard.can_be_played(player, player_hand[i - 1]):
+                interface.show_info("No se puede jugar: " + str(player_hand[i - 1]))
+                continue
+
+            interface.show_card(player_hand[i - 1], "Card to play")
+            if not interface.ask_yesno("Play: " + str(player_hand[i - 1]) + "?", "Card"):
+                continue
+            card_to_play = player_hand[i - 1]
+
+
 def main():
     """ """
 
@@ -43,20 +96,10 @@ def main():
         # Show hand
 
         # Clocking
-        if (interface.ask_yesno("Desea clockear una carta?", "Clocking phase")):
-            cards = "Player hand:\n"
-            for i in range(len(player_hand)):
-                cards += "[" + str(i + 1) + "]" + str(player_hand[i]) + "\n"
-
-            card_to_clock = None
-            while not card_to_clock:
-                i = interface.get_integer(cards, "Choose a card to clock", [1, len(player_hand)])
-                interface.show_card(player_hand[i - 1])
-                if not interface.ask_yesno("Clock: " + str(player_hand[i - 1]) + "?", "Clocking card"):
-                    continue
-                card_to_clock = player_hand[i - 1]
-
+        clocking_phase(gameboard, interface, player, player_hand)
         # Play cards
+
+        main_phase(gameboard, interface, "Main Phase 1", player, player_hand)
 
         # Battle phase
         # atack
@@ -64,6 +107,7 @@ def main():
         # revive
 
         # Play cards
+        main_phase(gameboard, interface, "Main Phase 2", player, player_hand)
 
         # Turn end
         player_index += 1
