@@ -51,9 +51,10 @@ def main():
             card_to_clock = None
             while not card_to_clock:
                 i = interface.get_integer(cards, "Choose a card to clock", [1, len(player_hand)])
+                interface.show_card(player_hand[i - 1])
                 if not interface.ask_yesno("Clock: " + str(player_hand[i - 1]) + "?", "Clocking card"):
                     continue
-                card_to_clock = player_hand[i]
+                card_to_clock = player_hand[i - 1]
 
         # Play cards
 
@@ -66,6 +67,7 @@ def main():
 
         # Turn end
         player_index += 1
+        interface.show_info(player, "Fin turno jugador")
 
 
 main()
