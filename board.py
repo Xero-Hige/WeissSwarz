@@ -136,7 +136,7 @@ class _PlayerSide(object):
             colors[card.get_color()] = 0
         return colors.keys()
 
-    def can_play_character(self, card):
+    def can_normal_card(self, card):
         if None not in self.front_stage + self.back_stage:
             return False
 
@@ -213,7 +213,11 @@ class GameBoard(object):
         self.current(side).clocking(card)
 
     def can_be_played(self, side, card):
-        self.current(side).can_play_character(card)
+        if isinstance(card,ClimaxCard):
+            self.self.current(side).can_play_climax(card)
+
+        else:
+            self.current(side).can_play_card(card)
 
     def play_character(self, side, card, stage, position):
         self.current(side).play_character(card, stage, position)
