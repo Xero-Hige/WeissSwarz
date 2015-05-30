@@ -60,11 +60,12 @@ class _PlayerSide(object):
         :param lado_oponente:
         :return: None
         """
+        posicion_atacante = FRONT_STAGE_POSITIONS.index(posicion_atacante)
+        posicion_defensor = FRONT_STAGE_POSITIONS.index(posicion_defensor)
 
-        print posicion_atacante
 
-        atacker_card = self.escena_principal[FRONT_STAGE_POSITIONS.index(posicion_atacante)]
-        defender_card = lado_oponente.escena_principal[FRONT_STAGE_POSITIONS.index(posicion_defensor)]
+        atacker_card = self.escena_principal[posicion_atacante]
+        defender_card = lado_oponente.escena_principal[posicion_defensor]
 
         # Empate o perdida
         if defender_card and atacker_card.power <= defender_card.power:  # Si es menor o igual se destruye el atacante

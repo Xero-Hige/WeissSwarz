@@ -29,7 +29,9 @@ class WindowInterface(object):
     def __init__(self):
         pygame.init()
         self.tk_window = Tk()
-        self.image_label = Label();
+        self.image_label = Label()
+
+        self.cards_surface = {}
 
     def get_integer(self, message, title="", number_range=[]):
         """ """
@@ -61,7 +63,7 @@ class WindowInterface(object):
         """
         self.image_label.destroy()
 
-        c = card_maker.generate_card_image(card)
+        c = self.__get_card_surface(card)
         from PIL import Image, ImageTk
 
         image = Image.fromstring('RGBA', c.get_rect()[2:], pygame.image.tostring(c, "RGBA"))
@@ -75,6 +77,14 @@ class WindowInterface(object):
         self.tk_window.update()
         sleep(2)
 
+    def __get_card_surface(self,card):
+        card_str = str(card)
+        if not self.cards_surface.has_key(card_str):
+            self.cards_surface[card_str] = card_maker.generate_card_image(card)
+
+        return self.cards_surface[card_str]
+
+
     def __dibujar_front_stage(self, background, posicion_izquierda_front, rotacion, front_stage):
         position = [posicion_izquierda_front, LADO_AREA_CARTA+LADO_AREA_CARTA/12]
 
@@ -82,7 +92,7 @@ class WindowInterface(object):
             myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 30)
 
             if card:
-                card_surface = card_maker.generate_card_image(card)
+                card_surface = self.__get_card_surface(card)
                 card_surface = pygame.transform.scale(card_surface, (ANCHO_CARTA_TABLERO, ALTO_CARTA_TABLERO))
 
                 power_label = myfont.render(str(card.get_power()), 1, (0, 0, 0))

@@ -137,7 +137,9 @@ def main():
 
             interface.show_card(front_stage[position-1],"Carta atacante")
 
+            front_stage[position-1] = None
             gameboard.declarar_ataque(player,board.FRONT_STAGE_POSITIONS[position-1])
+            interface.update_board(gameboard)
 
 
         show_hand(interface, player, player_hand)

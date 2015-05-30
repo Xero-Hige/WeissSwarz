@@ -38,7 +38,7 @@ class Deck(object):
             self.cards.append(ClimaxCard("A fated encounter", "red", 1, PowerModifyAbility(1000),
                                          "\"I'm not scared anymore even though it's dark.\n You're strong, Berserker.\n I'm safe if you're there like that.\""))
 
-        self.shuffle()
+        #self.shuffle()
 
     def draw_card(self):
         """ Draws a card from the deck """
