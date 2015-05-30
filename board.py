@@ -210,8 +210,8 @@ class _PlayerSide(object):
 
             if stage == FRONT_STAGE:
                 position = interface.get_integer(
-                    "Ingrese la posicion dentro del stage:\n\nAreas: [1-" + str(len(FRONT_STAGE)) + "]",
-                    title="Seleccion de area", number_range=[1, len(FRONT_STAGE)])
+                    "Ingrese la posicion dentro del stage:\n\nAreas: [1-" + str(len(FRONT_STAGE_POSITIONS)) + "]",
+                    title="Seleccion de area", number_range=[1, len(FRONT_STAGE_POSITIONS)])
                 escena = self.escena_principal
             elif stage == BACK_STAGE:
                 position = interface.get_integer(
