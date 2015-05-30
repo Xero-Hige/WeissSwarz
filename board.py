@@ -33,7 +33,7 @@ class _PlayerSide(object):
 
         self.deck = Deck("swartz")
 
-    def atack(self, atacker, defender, another_side):
+    def declarar_ataque(self, atacker, defender, another_side):
         """ """
         atacker_card = self.front_stage[atacker]
         defender_card = another_side.front_stage[defender]
@@ -136,7 +136,7 @@ class _PlayerSide(object):
             colors[card.get_color()] = 0
         return colors.keys()
 
-    def can_normal_card(self, card):
+    def can_play_normal_card(self, card):
         if None not in self.front_stage + self.back_stage:
             return False
 
@@ -156,7 +156,7 @@ class _PlayerSide(object):
         return True
 
     def play_character(self, card, stage, position):
-        if not self.can_play_character(card):
+        if not self.can_play_normal_card(card):
             raise ValueError, "Carta no jugable"
 
         if stage == FRONT_STAGE:
@@ -190,34 +190,40 @@ class GameBoard(object):
     def current(self, side):
         if side == WEISS_SIDE:
             return self.weiss
-        return self.swartz
+        return self.schwarz
 
-    def atack(self, side, atacker, defender):
-        """ TODO: """
+    def declarar_ataque(self, side, posicion_atacante, posicion_defensor):
+        """
+
+        :param side:
+        :param posicion_atacante:Posicion en el tablero del jugador de la carta que ataca Left Center Right (ctes)
+        :param posicion_defensor:Posicion en el tablero del oponente de la carta a atacar: Left Center Right (ctes)
+        :return:
+        """
         if side == WEISS_SIDE:
-            return self.weiss.atack(atacker, defender, self.schwarz)
+            return self.weiss.declarar_ataque(posicion_atacante, posicion_defensor, self.schwarz)
 
         elif side == SCHWARZ_SIDE:
-            return self.schwarz.atack(atacker, defender, self.weiss)
+            return self.schwarz.declarar_ataque(posicion_atacante, posicion_defensor, self.weiss)
 
     def draw(self, side, amount=1):
-        self.current(side).draw(amount)
+        return self.current(side).draw(amount)
 
     def get_side_level(self, side):
-        self.current(side).get_level()
+        return self.current(side).get_level()
 
     def get_clock_level(self, side):
-        self.current(side).get_clock_level()
+        return self.current(side).get_clock_level()
 
     def clocking(self, side, card):
-        self.current(side).clocking(card)
+        return self.current(side).clocking(card)
 
     def can_be_played(self, side, card):
-        if isinstance(card,ClimaxCard):
-            self.self.current(side).can_play_climax(card)
+        if isinstance(card, ClimaxCard):
+            return self.current(side).can_play_climax(card)
 
         else:
-            self.current(side).can_play_card(card)
+            return self.current(side).can_play_card(card)
 
     def play_character(self, side, card, stage, position):
         self.current(side).play_character(card, stage, position)
