@@ -2,7 +2,6 @@ import random
 
 from  board import GameBoard
 import board
-from cards import ClimaxCard
 from interface import WindowInterface
 
 __author__ = 'hige'
@@ -42,7 +41,6 @@ def clocking_phase(gameboard, interface, player, player_hand):
     interface.update_board(gameboard)
 
 
-
 def main_phase(gameboard, interface, phase, player, player_hand):
     player_hand_string = "Player hand:\n\n"
     for i in range(len(player_hand)):
@@ -68,7 +66,7 @@ def main_phase(gameboard, interface, phase, player, player_hand):
                 continue
             card_to_play = player_hand[i - 1]
 
-            gameboard.play_character(player,card_to_play)
+            gameboard.play_character(player, card_to_play)
             player_hand.remove(card_to_play)
             interface.update_board(gameboard)
 
@@ -125,22 +123,22 @@ def main():
 
         # Battle phase
         front_stage = gameboard.get_front_stage_cards(player)
-        while interface.ask_yesno("Desea atacar con alguna carta?","Fase de ataque"):
-            position = interface.get_integer("Elija carta con la que atacar:","Seleccion de atacante",[1,len(board.FRONT_STAGE_POSITIONS)])
+        while interface.ask_yesno("Desea atacar con alguna carta?", "Fase de ataque"):
+            position = interface.get_integer("Elija carta con la que atacar:", "Seleccion de atacante",
+                                             [1, len(board.FRONT_STAGE_POSITIONS)])
 
             if not position:
                 continue
 
-            if not front_stage[position-1]:
-                interface.show_info("No es una carta valida para atacar","No se puede atacar")
+            if not front_stage[position - 1]:
+                interface.show_info("No es una carta valida para atacar", "No se puede atacar")
                 continue
 
-            interface.show_card(front_stage[position-1],"Carta atacante")
+            interface.show_card(front_stage[position - 1], "Carta atacante")
 
-            front_stage[position-1] = None
-            gameboard.declarar_ataque(player,board.FRONT_STAGE_POSITIONS[position-1])
+            front_stage[position - 1] = None
+            gameboard.declarar_ataque(player, board.FRONT_STAGE_POSITIONS[position - 1])
             interface.update_board(gameboard)
-
 
         show_hand(interface, player, player_hand)
         # Play cards
@@ -150,7 +148,7 @@ def main():
         player_index += 1
         interface.show_info(player, "Fin turno jugador")
 
-    interface.show_info("Gano el jugador "+gameboard.get_winner(),"Fin del juego")
+    interface.show_info("Gano el jugador " + gameboard.get_winner(), "Fin del juego")
 
 
 main()

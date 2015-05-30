@@ -6,12 +6,13 @@ import tkSimpleDialog
 
 import card_maker
 
+
 RESOLUTION = (1600, 1000)
 
 ANCHO_PUNTO = 20
 
-ALTO_CARTA_TABLERO = 10 *ANCHO_PUNTO
-ANCHO_CARTA_TABLERO = 7 *ANCHO_PUNTO
+ALTO_CARTA_TABLERO = 10 * ANCHO_PUNTO
+ANCHO_CARTA_TABLERO = 7 * ANCHO_PUNTO
 
 LADO_AREA_CARTA = 12 * ANCHO_PUNTO
 
@@ -20,7 +21,6 @@ ANCHO_BACKGROUND = LADO_AREA_CARTA * 8
 
 POSICION_ANCHO_LABEL_PODER = ANCHO_CARTA_TABLERO / 4
 POSICION_ALTO_LABEL_PODER = ALTO_CARTA_TABLERO / 2
-
 
 __author__ = 'hige'
 
@@ -77,7 +77,7 @@ class WindowInterface(object):
         self.tk_window.update()
         sleep(2)
 
-    def __get_card_surface(self,card):
+    def __get_card_surface(self, card):
         card_str = str(card)
         if not self.cards_surface.has_key(card_str):
             self.cards_surface[card_str] = card_maker.generate_card_image(card)
@@ -86,7 +86,7 @@ class WindowInterface(object):
 
 
     def __dibujar_front_stage(self, background, posicion_izquierda_front, rotacion, front_stage):
-        position = [posicion_izquierda_front, LADO_AREA_CARTA+LADO_AREA_CARTA/12]
+        position = [posicion_izquierda_front, LADO_AREA_CARTA + LADO_AREA_CARTA / 12]
 
         for card in front_stage:
             myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 30)
@@ -101,11 +101,11 @@ class WindowInterface(object):
                 card_surface = pygame.transform.rotate(card_surface, rotacion)
                 background.blit(card_surface, position)
 
-            position[1] += LADO_AREA_CARTA + LADO_AREA_CARTA/6
+            position[1] += LADO_AREA_CARTA + LADO_AREA_CARTA / 6
 
     def __ganerate_board(self, gameboard):
         background = pygame.image.load("resources/background.png")
-        background = pygame.transform.scale(background,(ANCHO_BACKGROUND,ALTO_BACKGROUND))
+        background = pygame.transform.scale(background, (ANCHO_BACKGROUND, ALTO_BACKGROUND))
 
         front_stage = gameboard.get_all_front_stage_cards()
 
@@ -113,10 +113,9 @@ class WindowInterface(object):
         schwarz_front_stage = front_stage[3:]
         schwarz_front_stage = schwarz_front_stage[::-1]
 
-        posicion_izquierda_front = 3*LADO_AREA_CARTA #3 areas anteriores (clock climax y back
+        posicion_izquierda_front = 3 * LADO_AREA_CARTA  # 3 areas anteriores (clock climax y back
         self.__dibujar_front_stage(background, posicion_izquierda_front, -90, weiss_front_stage)
-        self.__dibujar_front_stage(background, posicion_izquierda_front+LADO_AREA_CARTA, 90, schwarz_front_stage)
-
+        self.__dibujar_front_stage(background, posicion_izquierda_front + LADO_AREA_CARTA, 90, schwarz_front_stage)
 
         return pygame.transform.scale(background, RESOLUTION)
 

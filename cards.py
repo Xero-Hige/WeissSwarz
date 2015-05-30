@@ -8,13 +8,13 @@ class Ability(object):
     def apply_on_card(self, card):
         pass
 
-    def apply_on_board(self, gameboard,side):
+    def apply_on_board(self, gameboard, side):
         pass
 
     def revert_on_card(self, card):
         pass
 
-    def revert_on_board(self, gameboard,side):
+    def revert_on_board(self, gameboard, side):
         pass
 
     def _get_base_text(self):

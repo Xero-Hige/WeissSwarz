@@ -309,6 +309,7 @@ def generate_climax_image(card):
 
     return pygame.transform.rotate(result, -90)
 
+
 def generate_card_image(card):
     if isinstance(card, ClimaxCard):
         return generate_climax_image(card)
@@ -320,9 +321,10 @@ def generate_card_image(card):
         return generate_event_image(card)
 
     else:
-        raise TypeError , "Eso no es una carta, no se generar una imagen"
+        raise TypeError, "Eso no es una carta, no se generar una imagen"
 
-def show_card(card,text="",showtime=2):
+
+def show_card(card, text="", showtime=2):
     if isinstance(card, ClimaxCard):
         screen = pygame.display.set_mode((CLIMAX_WIDTH, CLIMAX_HEIGHT))
         card_image = generate_climax_image(card)
@@ -336,12 +338,13 @@ def show_card(card,text="",showtime=2):
         card_image = generate_event_image(card)
 
     else:
-        raise TypeError , "Eso no es una carta, no se puede mostrar"
+        raise TypeError, "Eso no es una carta, no se puede mostrar"
 
     screen.blit(card_image, (0, 0))
     pygame.display.set_caption(text)
     pygame.display.flip()
     sleep(showtime)
+
 
 def main():
     cards = []
@@ -380,6 +383,7 @@ def main():
     screen.blit(card_image, (0, 0))
     pygame.display.flip()
     sleep(2)
+
 
 if __name__ == "__main__":
     main()

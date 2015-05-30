@@ -63,7 +63,6 @@ class _PlayerSide(object):
         posicion_atacante = FRONT_STAGE_POSITIONS.index(posicion_atacante)
         posicion_defensor = FRONT_STAGE_POSITIONS.index(posicion_defensor)
 
-
         atacker_card = self.escena_principal[posicion_atacante]
         defender_card = lado_oponente.escena_principal[posicion_defensor]
 

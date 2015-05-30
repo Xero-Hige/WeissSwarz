@@ -15,7 +15,8 @@ class Deck(object):
 
         for x in range(4):
             self.cards.append(
-                CharacterCard("Illya", "blue", 0, PowerModifyAbility(-1000), "\"Good night\"", 0, 0, 5500, 1, ("Mage", "Loli")))
+                CharacterCard("Illya", "blue", 0, PowerModifyAbility(-1000), "\"Good night\"", 0, 0, 5500, 1,
+                              ("Mage", "Loli")))
             self.cards.append(CharacterCard("Archer", "red", 1, None,
                                             "\"But it's all a fake. Such hypocrisy cannot save anything.\nNo, first of all, I did not know what I wanted to save!\"",
                                             2, 0, 8000, 1, ("Archer", "Heroic")))
@@ -27,7 +28,8 @@ class Deck(object):
                               2,
                               ("Warrior", "Heroic")))
             self.cards.append(
-                CharacterCard("Shiro", "green", 1, TemporalModifyAbility(-1000), "\"People die when they are killed\"", 0, 0, 1000, 1,
+                CharacterCard("Shiro", "green", 1, TemporalModifyAbility(-1000), "\"People die when they are killed\"",
+                              0, 0, 1000, 1,
                               ("Warrior", "Mage")))
             self.cards.append(EventCard("Wounded charge", "blue", 0, None,
                                         "Believe it till the end, i won't go away\nAnd won't say never", 1, 2))
@@ -38,7 +40,7 @@ class Deck(object):
             self.cards.append(ClimaxCard("A fated encounter", "red", 1, PowerModifyAbility(1000),
                                          "\"I'm not scared anymore even though it's dark.\n You're strong, Berserker.\n I'm safe if you're there like that.\""))
 
-        #self.shuffle()
+            # self.shuffle()
 
     def draw_card(self):
         """ Draws a card from the deck """
