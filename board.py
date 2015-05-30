@@ -1,3 +1,4 @@
+# coding=utf-8
 import random
 
 CLOCKING_AMOUNT = 2
@@ -11,9 +12,9 @@ FRONT_STAGE = 1
 
 STAGES = [BACK_STAGE, FRONT_STAGE]
 
-FRONT_LEFT = 0
-FRONT_CENTER = 1
-FRONT_RIGHT = 2
+FRONT_LEFT = -1
+FRONT_CENTER = 0
+FRONT_RIGHT = 1
 
 FRONT_STAGE_POSITIONS = [FRONT_LEFT, FRONT_CENTER, FRONT_RIGHT]
 
@@ -22,8 +23,8 @@ BACK_RIGHT = 1
 
 BACK_STAGE_POSITIONS = [BACK_LEFT, BACK_RIGHT]
 
-SCHWARZ_SIDE = "schwarz"
-WEISS_SIDE = "weiss"
+SCHWARZ_SIDE = "Schwarz"
+WEISS_SIDE = "Weiss"
 NONE_SIDE = ""
 
 __author__ = 'hige'
@@ -35,7 +36,7 @@ from cards import ClimaxCard, CharacterCard, EventCard
 class _PlayerSide(object):
     """Simulates a player field"""
 
-    def __init__(self):
+    def __init__(self, nombre):
         self.area_clock = []
         self.area_stock = []
         self.area_nivel = []
@@ -49,6 +50,8 @@ class _PlayerSide(object):
 
         self.deck = Deck("swartz")
 
+        self.nombre = nombre
+
     def declarar_ataque(self, posicion_atacante, posicion_defensor, lado_oponente, interface):
         """
 
@@ -57,8 +60,11 @@ class _PlayerSide(object):
         :param lado_oponente:
         :return: None
         """
-        atacker_card = self.escena_principal[posicion_atacante]
-        defender_card = lado_oponente.front_stage[posicion_defensor]
+
+        print posicion_atacante
+
+        atacker_card = self.escena_principal[FRONT_STAGE_POSITIONS.index(posicion_atacante)]
+        defender_card = lado_oponente.escena_principal[FRONT_STAGE_POSITIONS.index(posicion_defensor)]
 
         # Empate o perdida
         if defender_card and atacker_card.power <= defender_card.power:  # Si es menor o igual se destruye el atacante
@@ -83,7 +89,7 @@ class _PlayerSide(object):
         self.area_stock.append(trigger_card)
 
 
-    def level_up(self):
+    def level_up(self, interface):
 
         # Choice
         selected_card = random.choice(self.area_clock)
@@ -95,19 +101,27 @@ class _PlayerSide(object):
         self.area_espera += self.area_clock
         self.area_clock = []
 
-    def get_hit(self, soul_points):
+        interface.show_info("Jugador: " + self.nombre + " subio de nivel\n\nNivel actual:" + str(self.get_level()),
+                            "Aumento de nivel")
+
+
+    def get_hit(self, soul_points, interface):
         damage = []
         for x in xrange(soul_points):
             damage.append(self.deck.draw_card())
             if isinstance(damage[-1], ClimaxCard):
+                interface.show_info("Sacada carta: {0}\n Daño cancelado".format(str(damage[-1])), "Daño cancelado")
                 for card in damage:
                     self.area_espera.append(card)
                 return
 
         self.area_clock += damage
 
+        interface.show_info("Jugador " + self.nombre + "daño recibido: " + str(soul_points) + " puntos de daño",
+                            "Daño hecho")
+
         if len(self.area_clock) >= MAX_CLOCK_LEVEL:
-            self.level_up()
+            self.level_up(interface)
 
     def destroy(self, card_number):
         """Remueve una carta de caracter del campo"""
@@ -253,10 +267,10 @@ class GameBoard(object):
         """Creates an empty gameboard"""
 
         # White (Weiss)
-        self.weiss = _PlayerSide()
+        self.weiss = _PlayerSide(WEISS_SIDE)
 
         # Black (Schwarz)
-        self.schwarz = _PlayerSide()
+        self.schwarz = _PlayerSide(SCHWARZ_SIDE)
 
         self.interface_handler = interface
 
@@ -265,20 +279,19 @@ class GameBoard(object):
             return self.weiss
         return self.schwarz
 
-    def declarar_ataque(self, side, posicion_atacante, posicion_defensor):
+    def declarar_ataque(self, side, posicion_atacante):
         """
 
         :param side:
         :param posicion_atacante:Posicion en el tablero del jugador de la carta que ataca Left Center Right (ctes)
-        :param posicion_defensor:Posicion en el tablero del oponente de la carta a atacar: Left Center Right (ctes)
         :return:
         """
         if side == WEISS_SIDE:
-            return self.current(side).declarar_ataque(posicion_atacante, posicion_defensor, self.schwarz,
+            return self.current(side).declarar_ataque(posicion_atacante, -1 * posicion_atacante, self.schwarz,
                                                       self.interface_handler)
 
         elif side == SCHWARZ_SIDE:
-            return self.current(side).declarar_ataque(posicion_atacante, posicion_defensor, self.weiss,
+            return self.current(side).declarar_ataque(posicion_atacante, -1 * posicion_atacante, self.weiss,
                                                       self.interface_handler)
 
     def play_card(self, side, card):
@@ -319,7 +332,14 @@ class GameBoard(object):
             return SCHWARZ_SIDE
         return NONE_SIDE
 
-    def get_front_stage_cards(self):
+    def get_front_stage_cards(self, side):
+        return self.current(side).escena_principal[:]
+
+    def get_back_stage_cards(self, side):
+        return self.current(side).backstage[:]
+
+
+    def get_all_front_stage_cards(self):
         """Devuelve una lista de cartas con las cartas de la escena principal.
             Las primeras 3 posiciones corresponden a las cartas de weiss, las ultimas 3 a las cartas schwarz."""
 

@@ -77,6 +77,13 @@ def main_phase(gameboard, interface, phase, player, player_hand):
             player_hand_string += str(player_hand[i]) + "\n"
 
 
+def show_hand(interface, player, player_hand):
+    player_hand_string = "Player hand:\n\n"
+    for i in range(len(player_hand)):
+        player_hand_string += str(player_hand[i]) + "\n"
+    interface.show_info(player_hand_string, "Mano del jugador " + player)
+
+
 def main():
     """ """
 
@@ -107,26 +114,41 @@ def main():
         player_hand.append(drew_card)
 
         interface.show_info(str(drew_card), "Carta robada: ")
-
-        # Show hand
+        show_hand(interface, player, player_hand)
 
         # Clocking
         clocking_phase(gameboard, interface, player, player_hand)
-        # Play cards
+        show_hand(interface, player, player_hand)
 
+        # Play cards
         main_phase(gameboard, interface, "Main Phase 1", player, player_hand)
 
         # Battle phase
-        # atack
-        interface.show_info("Aca se supone atacan", "        TODO        ")
-        # revive
+        front_stage = gameboard.get_front_stage_cards(player)
+        while interface.ask_yesno("Desea atacar con alguna carta?","Fase de ataque"):
+            position = interface.get_integer("Elija carta con la que atacar:","Seleccion de atacante",[1,len(board.FRONT_STAGE_POSITIONS)])
 
+            if not position:
+                continue
+
+            if not front_stage[position-1]:
+                interface.show_info("No es una carta valida para atacar","No se puede atacar")
+                continue
+
+            interface.show_card(front_stage[position-1],"Carta atacante")
+
+            gameboard.declarar_ataque(player,board.FRONT_STAGE_POSITIONS[position-1])
+
+
+        show_hand(interface, player, player_hand)
         # Play cards
         main_phase(gameboard, interface, "Main Phase 2", player, player_hand)
 
         # Turn end
         player_index += 1
         interface.show_info(player, "Fin turno jugador")
+
+    interface.show_info("Gano el jugador "+gameboard.get_winner(),"Fin del juego")
 
 
 main()
