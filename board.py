@@ -29,7 +29,7 @@ NONE_SIDE = ""
 __author__ = 'hige'
 
 from deck import Deck
-from cards import ClimaxCard
+from cards import ClimaxCard, CharacterCard, EventCard
 
 
 class _PlayerSide(object):
@@ -280,6 +280,16 @@ class GameBoard(object):
         elif side == SCHWARZ_SIDE:
             return self.current(side).declarar_ataque(posicion_atacante, posicion_defensor, self.weiss,
                                                       self.interface_handler)
+
+    def play_card(self,side,card):
+        if (isinstance(card,CharacterCard)):
+            self.play_character(side,card)
+        elif isinstance(card,EventCard):
+            pass
+        elif isinstance(card,ClimaxCard):
+            pass
+
+
 
     def play_character(self, side, card):
         self.current(side).play_character(card, self.interface_handler)
