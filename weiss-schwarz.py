@@ -2,6 +2,7 @@ import random
 
 from  board import GameBoard
 import board
+from cards import ClimaxCard
 from interface import WindowInterface
 
 __author__ = 'hige'
@@ -63,6 +64,9 @@ def main_phase(gameboard, interface, phase, player, player_hand):
             if not interface.ask_yesno("Play: " + str(player_hand[i - 1]) + "?", "Card"):
                 continue
             card_to_play = player_hand[i - 1]
+
+            gameboard.play_character(player,card_to_play)
+
             player_hand.remove(card_to_play)
 
         player_hand_string = "Player hand:\n\n"

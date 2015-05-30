@@ -6,15 +6,21 @@ MAX_LEVEL = 4
 
 MAX_CLOCK_LEVEL = 7
 
-BACK_STAGE = "back"
-FRONT_STAGE = "front"
+BACK_STAGE = 2
+FRONT_STAGE = 1
+
+STAGES = [BACK_STAGE, FRONT_STAGE]
 
 FRONT_LEFT = 0
 FRONT_CENTER = 1
 FRONT_RIGHT = 2
 
+FRONT_STAGE_POSITIONS = [FRONT_LEFT, FRONT_CENTER, FRONT_RIGHT]
+
 BACK_LEFT = 0
 BACK_RIGHT = 1
+
+BACK_STAGE_POSITIONS = [BACK_LEFT, BACK_RIGHT]
 
 SCHWARZ_SIDE = "schwarz"
 WEISS_SIDE = "weiss"
@@ -183,22 +189,49 @@ class _PlayerSide(object):
 
         return True
 
-    def play_character(self, card, stage, position):
+    def pagar_coste(self, coste_a_pagar):
+        for coste in range(coste_a_pagar):
+            cost_card = self.area_stock.pop(-1)  # Desapilo
+            self.area_espera.append(cost_card)
+
+    def play_character(self, card, interface):
         if not self.can_play_normal_card(card):
             raise ValueError, "Carta no jugable"
 
-        if stage == FRONT_STAGE:
+        while True:
+            stage = interface.get_integer("Ingrese la stage donde jugar la carta:\n\n[1] Front stage\n[2] Back_stage",
+                                          title="Seleccion de stage", number_range=[1, len(STAGES) + 1])
+
+            if not stage:
+                return
+
+            escena = None
+            position = None
+
+            if stage == FRONT_STAGE:
+                position = interface.get_integer(
+                    "Ingrese la posicion dentro del stage:\n\nAreas: [1-" + str(len(BACK_STAGE_POSITIONS)) + "]",
+                    title="Seleccion de area", number_range=[1, len(BACK_STAGE_POSITIONS)])
+                escena = self.escena_principal
+            elif stage == BACK_STAGE:
+                position = interface.get_integer(
+                    "Ingrese la posicion dentro del stage:\n\nAreas: [1-" + str(len(BACK_STAGE_POSITIONS)) + "]",
+                    title="Seleccion de area", number_range=[1, len(BACK_STAGE_POSITIONS)])
+                escena = self.backstage
+
+            if not position:
+                return
+
+            position -= 1
             if self.escena_principal[position]:
-                raise IndexError, "Posicion ocupada"
-            self.escena_principal[position] = card
+                interface.show_info("No se puede jugar en esa posicion, esta ocupada", title="")
+                if not interface.ask_yesno("Elegir otra posicion?", title=""):
+                    return
+            else:
+                escena[position] = card
+                self.pagar_coste(card.get_cost())
+                break
 
-        elif stage == BACK_STAGE:
-            if self.backstage[position]:
-                raise IndexError, "Posicion ocupada"
-            self.backstage[position] = card
-
-        else:
-            raise ValueError, "No existe esa stage"
 
     def can_play_climax_card(self, card):
         if self.area_climax:
@@ -241,12 +274,15 @@ class GameBoard(object):
         :return:
         """
         if side == WEISS_SIDE:
-            return self.weiss.declarar_ataque(posicion_atacante, posicion_defensor, self.schwarz,
-                                              self.interface_handler)
+            return self.current(side).declarar_ataque(posicion_atacante, posicion_defensor, self.schwarz,
+                                                      self.interface_handler)
 
         elif side == SCHWARZ_SIDE:
-            return self.schwarz.declarar_ataque(posicion_atacante, posicion_defensor, self.weiss,
-                                                self.interface_handler)
+            return self.current(side).declarar_ataque(posicion_atacante, posicion_defensor, self.weiss,
+                                                      self.interface_handler)
+
+    def play_character(self, side, card):
+        self.current(side).play_character(card, self.interface_handler)
 
     def draw(self, side, amount=1):
         return self.current(side).draw(amount)
@@ -266,9 +302,6 @@ class GameBoard(object):
 
         else:
             return self.current(side).can_play_normal_card(card)
-
-    def play_character(self, side, card, stage, position):
-        self.current(side).play_character(card, stage, position)
 
     def get_winner(self):
         if self.weiss.get_level() == MAX_LEVEL:
