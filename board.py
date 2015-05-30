@@ -1,3 +1,9 @@
+import random
+
+MAX_LEVEL = 4
+
+MAX_CLOCK_LEVEL = 7
+
 BACK_STAGE = "back"
 FRONT_STAGE = "front"
 
@@ -45,7 +51,7 @@ class _PlayerSide(object):
         defender_card = lado_oponente.front_stage[posicion_defensor]
 
         # Empate o perdida
-        if defender_card and atacker_card.power <= defender_card.power:  #Si es menor o igual se destruye el atacante
+        if defender_card and atacker_card.power <= defender_card.power:  # Si es menor o igual se destruye el atacante
             self.destroy(posicion_atacante)
             if atacker_card.power == defender_card.power:  #Si son iguales se destruyen ambas
                 lado_oponente.destroy(posicion_defensor)
@@ -55,25 +61,28 @@ class _PlayerSide(object):
         trigger_icon = trigger_card.get_trigger_icon()
         soul_points = atacker_card.soul_points + trigger_icon
 
-        if not defender_card:  #Ataque directo
+        if not defender_card:  # Ataque directo
             soul_points += 1
 
         elif atacker_card.power > defender_card.power:
             lado_oponente.destroy(posicion_defensor)
 
-        lado_oponente.get_hit(soul_points)
         interface.show_card(trigger_card, "Trigered card: +" + str(trigger_icon) + " soul points")
+        lado_oponente.get_hit(soul_points, interface)
+
+        self.stock.append(trigger_card)
 
 
     def level_up(self):
 
         # Choice
-        selected_card = self.clock.pop(-1)
+        selected_card = random.choice(self.clock)
+        self.clock.remove(selected_card)
         # Choice
 
         self.level.append(selected_card)
 
-        self.back_stage += self.clock
+        self.waiting_room += self.clock
         self.clock = []
 
     def get_hit(self, soul_points):
@@ -87,7 +96,7 @@ class _PlayerSide(object):
 
         self.clock += damage
 
-        if len(self.clock) >= 7:
+        if len(self.clock) >= MAX_CLOCK_LEVEL:
             self.level_up()
 
     def destroy(self, card_number):
@@ -248,8 +257,8 @@ class GameBoard(object):
         self.current(side).play_character(card, stage, position)
 
     def get_winner(self):
-        if self.weiss.get_level() == 4:
+        if self.weiss.get_level() == MAX_LEVEL:
             return WEISS_SIDE
-        if self.schwarz.get_level() == 4:
+        if self.schwarz.get_level() == MAX_LEVEL:
             return SCHWARZ_SIDE
         return ""
