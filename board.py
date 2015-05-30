@@ -33,33 +33,37 @@ class _PlayerSide(object):
 
         self.deck = Deck("swartz")
 
-    def declarar_ataque(self, atacker, defender, another_side):
-        """ """
-        atacker_card = self.front_stage[atacker]
-        defender_card = another_side.front_stage[defender]
+    def declarar_ataque(self, posicion_atacante, posicion_defensor, lado_oponente, interface):
+        """
+
+        :param posicion_atacante:
+        :param posicion_defensor:
+        :param lado_oponente:
+        :return: None
+        """
+        atacker_card = self.front_stage[posicion_atacante]
+        defender_card = lado_oponente.front_stage[posicion_defensor]
+
+        # Empate o perdida
+        if defender_card and atacker_card.power <= defender_card.power:  #Si es menor o igual se destruye el atacante
+            self.destroy(posicion_atacante)
+            if atacker_card.power == defender_card.power:  #Si son iguales se destruyen ambas
+                lado_oponente.destroy(posicion_defensor)
+            return
 
         trigger_card = self.deck.draw_card()
-
         trigger_icon = trigger_card.get_trigger_icon()
+        soul_points = atacker_card.soul_points + trigger_icon
 
-        if not defender_card:
-            soul_points = atacker_card.soul_points
-            soul_points += trigger_icon + 1
-            another_side.get_hit(soul_points)
-            return trigger_card
+        if not defender_card:  #Ataque directo
+            soul_points += 1
 
-        if atacker_card.power < defender_card.power:
-            self.destroy(atacker)
+        elif atacker_card.power > defender_card.power:
+            lado_oponente.destroy(posicion_defensor)
 
-        if atacker_card.power >= defender_card.power:
-            another_side.destroy(defender)
+        lado_oponente.get_hit(soul_points)
+        interface.show_card(trigger_card, "Trigered card: +" + str(trigger_icon) + " soul points")
 
-        if atacker_card.power > defender_card.power:
-            soul_points = atacker_card.soul_points
-            soul_points += trigger_icon
-            another_side.get_hit(soul_points)
-
-        return trigger_card  # TODO: Ver
 
     def level_up(self):
 
@@ -172,6 +176,19 @@ class _PlayerSide(object):
         else:
             raise ValueError, "No existe esa stage"
 
+    def can_play_climax_card(self, card):
+        if self.climax:
+            return False
+
+        playable_colors = self.get_clock_colors()
+        playable_colors += self.get_level_colors()
+
+        if card.get_color() not in playable_colors:
+            if card.get_level() != 0:
+                return False
+
+        return True
+
 
 class GameBoard(object):
     """Simulates the gameboard"""
@@ -201,10 +218,12 @@ class GameBoard(object):
         :return:
         """
         if side == WEISS_SIDE:
-            return self.weiss.declarar_ataque(posicion_atacante, posicion_defensor, self.schwarz)
+            return self.weiss.declarar_ataque(posicion_atacante, posicion_defensor, self.schwarz,
+                                              self.interface_handler)
 
         elif side == SCHWARZ_SIDE:
-            return self.schwarz.declarar_ataque(posicion_atacante, posicion_defensor, self.weiss)
+            return self.schwarz.declarar_ataque(posicion_atacante, posicion_defensor, self.weiss,
+                                                self.interface_handler)
 
     def draw(self, side, amount=1):
         return self.current(side).draw(amount)
@@ -220,10 +239,10 @@ class GameBoard(object):
 
     def can_be_played(self, side, card):
         if isinstance(card, ClimaxCard):
-            return self.current(side).can_play_climax(card)
+            return self.current(side).can_play_climax_card(card)
 
         else:
-            return self.current(side).can_play_card(card)
+            return self.current(side).can_play_normal_card(card)
 
     def play_character(self, side, card, stage, position):
         self.current(side).play_character(card, stage, position)
