@@ -186,14 +186,13 @@ class GameBoard(object):
         self.schwarz = _PlayerSide()
 
         self.interface_handler = interface
+    def current(self, side):
+        if side == WEISS_SIDE: return self.weiss
+        return self.swartz
 
     def atack(self, side, atacker, defender):
         """ TODO: """
-        if side == WEISS_SIDE:
-            return self.weiss.atack(atacker, defender, self.schwarz)
-
-        elif side == SCHWARZ_SIDE:
-            return self.schwarz.atack(atacker, defender, self.weiss)
+        self.current(side).atack(atacker, defender, self.schwarz)
 
     def draw(self, side, amount=1):
         """ """

@@ -17,7 +17,7 @@ def clocking_phase(gameboard, interface, player, player_hand):
 
     player_hand_string = "Player hand:\n\n"
     for i in range(len(player_hand)):
-        player_hand_string += "[" + str(i + 1) + "]" + str(player_hand[i]) + "\n"
+        player_hand_string += "[" + str(i + 1) + "]" + str(player_hand[i])
 
     card_to_clock = None
     while not card_to_clock:
