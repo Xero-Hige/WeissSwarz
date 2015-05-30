@@ -6,11 +6,19 @@ import tkSimpleDialog
 
 import card_maker
 
+
+ALTO_CARTA_TABLERO = 240
+ANCHO_CARTA_TABLERO = 168
+
+POSICION_ANCHO_LABEL_PODER = ANCHO_CARTA_TABLERO / 4
+POSICION_ALTO_LABEL_PODER = ALTO_CARTA_TABLERO / 2
+
 __author__ = 'hige'
 
 
 class WindowInterface(object):
     def __init__(self):
+        pygame.init()
         self.tk_window = Tk()
         self.image_label = Label();
 
@@ -57,3 +65,33 @@ class WindowInterface(object):
 
         self.tk_window.update()
         sleep(2)
+
+    def ganerate_board(self, gameboard):
+        background = pygame.image.load("resources/background.png")
+
+        front_stage = gameboard.get_front_stage_cards()
+        position = [0, 0]
+        for card in front_stage:
+            myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 30)
+
+            if card:
+                card_surface = card_maker.generate_card_image(card)
+                card_surface = pygame.transform.scale(card_surface, (ANCHO_CARTA_TABLERO, ALTO_CARTA_TABLERO))
+
+                power_label = myfont.render(str(card.get_power()), 1, (0, 0, 0))
+                card_surface.blit(power_label, (POSICION_ANCHO_LABEL_PODER, POSICION_ALTO_LABEL_PODER))
+
+                background.blit(card_surface, position)
+
+            position[0] += ANCHO_CARTA_TABLERO / 2
+            position[1] += ALTO_CARTA_TABLERO / 2
+
+        return background
+
+    def update_board(self, gameboard):
+        board_surface = self.ganerate_board(gameboard)
+
+        screen = pygame.display.set_mode(board_surface.get_size())
+        screen.blit(board_surface, (0, 0))
+        pygame.display.set_caption("Board")
+        pygame.display.flip()

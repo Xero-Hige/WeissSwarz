@@ -307,7 +307,7 @@ def generate_climax_image(card):
         position -= line_height
         result.blit(label, (10, position))
 
-    return result
+    return pygame.transform.rotate(result, -90)
 
 def generate_card_image(card):
     if isinstance(card, ClimaxCard):

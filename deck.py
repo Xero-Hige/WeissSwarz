@@ -15,7 +15,7 @@ class Deck(object):
 
         for x in range(4):
             self.cards.append(
-                CharacterCard("Illya", "blue", 0, PowerModifyAbility(-1000), "\"Good night\"", 1, 1, 5500, 1, ("Mage", "Loli")))
+                CharacterCard("Illya", "blue", 0, PowerModifyAbility(-1000), "\"Good night\"", 0, 0, 5500, 1, ("Mage", "Loli")))
             self.cards.append(CharacterCard("Archer", "red", 1, None,
                                             "\"But it's all a fake. Such hypocrisy cannot save anything.\nNo, first of all, I did not know what I wanted to save!\"",
                                             2, 0, 8000, 1, ("Archer", "Heroic")))
@@ -23,7 +23,7 @@ class Deck(object):
                                             "\"Even if he is not a Master, our contract will not go away.\nI have sworn to protect him and to be his sword.\"",
                                             2, 2, 11000, 2, ("Warrior", "Heroic")))
             self.cards.append(
-                CharacterCard("Bride Saber", "green", 2, None, "\"Answer me:\n   Are you my Praetor?.\"", 3, 1, 15000,
+                CharacterCard("Bride Saber", "green", 2, None, "\"Answer me:\n   Are you my Praetor?.\"", 0, 0, 15000,
                               2,
                               ("Warrior", "Heroic")))
             self.cards.append(

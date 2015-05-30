@@ -210,8 +210,8 @@ class _PlayerSide(object):
 
             if stage == FRONT_STAGE:
                 position = interface.get_integer(
-                    "Ingrese la posicion dentro del stage:\n\nAreas: [1-" + str(len(BACK_STAGE_POSITIONS)) + "]",
-                    title="Seleccion de area", number_range=[1, len(BACK_STAGE_POSITIONS)])
+                    "Ingrese la posicion dentro del stage:\n\nAreas: [1-" + str(len(FRONT_STAGE)) + "]",
+                    title="Seleccion de area", number_range=[1, len(FRONT_STAGE)])
                 escena = self.escena_principal
             elif stage == BACK_STAGE:
                 position = interface.get_integer(
@@ -281,14 +281,13 @@ class GameBoard(object):
             return self.current(side).declarar_ataque(posicion_atacante, posicion_defensor, self.weiss,
                                                       self.interface_handler)
 
-    def play_card(self,side,card):
-        if (isinstance(card,CharacterCard)):
-            self.play_character(side,card)
-        elif isinstance(card,EventCard):
+    def play_card(self, side, card):
+        if (isinstance(card, CharacterCard)):
+            self.play_character(side, card)
+        elif isinstance(card, EventCard):
             pass
-        elif isinstance(card,ClimaxCard):
+        elif isinstance(card, ClimaxCard):
             pass
-
 
 
     def play_character(self, side, card):
@@ -319,3 +318,13 @@ class GameBoard(object):
         if self.schwarz.get_level() == MAX_LEVEL:
             return SCHWARZ_SIDE
         return NONE_SIDE
+
+    def get_front_stage_cards(self):
+        """Devuelve una lista de cartas con las cartas de la escena principal.
+            Las primeras 3 posiciones corresponden a las cartas de weiss, las ultimas 3 a las cartas schwarz."""
+
+        cartas = []
+        cartas += self.weiss.escena_principal
+        cartas += self.schwarz.escena_principal
+
+        return cartas

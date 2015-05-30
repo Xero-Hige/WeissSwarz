@@ -39,6 +39,9 @@ def clocking_phase(gameboard, interface, player, player_hand):
         interface.show_card(drew_cards[i], "Drew " + str(i + 1) + " Card")
         player_hand.append(drew_cards[i])
 
+    interface.update_board(gameboard)
+
+
 
 def main_phase(gameboard, interface, phase, player, player_hand):
     player_hand_string = "Player hand:\n\n"
@@ -66,8 +69,8 @@ def main_phase(gameboard, interface, phase, player, player_hand):
             card_to_play = player_hand[i - 1]
 
             gameboard.play_character(player,card_to_play)
-
             player_hand.remove(card_to_play)
+            interface.update_board(gameboard)
 
         player_hand_string = "Player hand:\n\n"
         for i in range(len(player_hand)):
@@ -89,6 +92,8 @@ def main():
     # Generate hand
     HANDS[player_index] = gameboard.draw(TURN[player_index], 4)
     HANDS[(player_index + 1) % 2] = gameboard.draw(TURN[(player_index + 1) % 2], 4)
+
+    interface.update_board(gameboard)
 
     while not gameboard.get_winner():
         player = TURN[player_index % 2]
