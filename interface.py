@@ -1,11 +1,15 @@
 from Tkinter import Tk, Label
 import pygame
+import random
 from time import sleep
 import tkMessageBox
 import tkSimpleDialog
 
 import card_maker
 
+CRUZ = "cruz"
+
+CARA = "cara"
 
 RESOLUTION = (1600, 1000)
 
@@ -126,3 +130,13 @@ class WindowInterface(object):
         screen.blit(board_surface, (0, 0))
         pygame.display.set_caption("Board")
         pygame.display.flip()
+
+    def lanzar_dado(self):
+        resultado = random.randrange(1, 6)
+        self.show_info("Salio: " + str(resultado), "Dado lanzado")
+        return resultado
+
+    def lanzar_moneda(self):
+        resultado = random.choice(CARA, CRUZ)
+        self.show_info("Salio: " + resultado, "Moneda lanzada")
+        return resultado

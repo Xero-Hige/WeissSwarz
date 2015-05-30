@@ -1,3 +1,5 @@
+import board
+
 __author__ = 'hige'
 
 
@@ -31,6 +33,18 @@ class PowerModifyAbility(Ability):
     def apply_on_card(self, card):
         card.power += self.modify
 
+    def apply_on_board(self, gameboard, side):
+        if side == board.WEISS_SIDE:
+            lado_afectado = board.SCHWARZ_SIDE
+        elif side == board.SCHWARZ_SIDE:
+            lado_afectado = board.WEISS_SIDE
+
+        cartas = gameboard.get_front_stage_cards(lado_afectado)
+        for carta in cartas:
+            if not carta:
+                continue
+            self.apply_on_card(carta)
+
     def get_text(self):
         text = self._get_base_text()
         if (self.modify > 0):
@@ -38,13 +52,25 @@ class PowerModifyAbility(Ability):
         else:
             text += "Reduces "
 
-        text += "character power points in " + str(abs(self.modify))
+        text += "enemy character power points in " + str(abs(self.modify))
         return text
 
 
 class TemporalModifyAbility(PowerModifyAbility):
     def revert_on_card(self, card):
         card.power -= self.modify
+
+    def revert_on_board(self, gameboard, side):
+        if side == board.WEISS_SIDE:
+            lado_afectado = board.SCHWARZ_SIDE
+        elif side == board.SCHWARZ_SIDE:
+            lado_afectado = board.WEISS_SIDE
+
+        cartas = gameboard.get_front_stage_cards(lado_afectado)
+        for carta in cartas:
+            if not carta:
+                continue
+            self.revert_on_card(carta)
 
     def get_text(self):
         return super(self.__class__, self).get_text() + " during this turn"

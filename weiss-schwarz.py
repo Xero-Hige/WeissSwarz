@@ -7,8 +7,6 @@ from interface import WindowInterface
 __author__ = 'hige'
 
 TURN = [board.SCHWARZ_SIDE, board.WEISS_SIDE]
-# Todo class hand
-HANDS = [[], []]
 
 
 def clocking_phase(gameboard, interface, player, player_hand):
@@ -66,9 +64,9 @@ def main_phase(gameboard, interface, phase, player, player_hand):
                 continue
             card_to_play = player_hand[i - 1]
 
-            gameboard.play_character(player, card_to_play)
-            player_hand.remove(card_to_play)
-            interface.update_board(gameboard)
+            if gameboard.play_card(player, card_to_play):
+                player_hand.remove(card_to_play)
+                interface.update_board(gameboard)
 
         player_hand_string = "Player hand:\n\n"
         for i in range(len(player_hand)):
@@ -82,10 +80,31 @@ def show_hand(interface, player, player_hand):
     interface.show_info(player_hand_string, "Mano del jugador " + player)
 
 
+def fase_de_batalla(gameboard, interface, player):
+    front_stage = gameboard.get_front_stage_cards(player)
+    while interface.ask_yesno("Desea atacar con alguna carta?", "Fase de ataque"):
+        position = interface.get_integer("Elija carta con la que atacar:", "Seleccion de atacante",
+                                         [1, len(board.FRONT_STAGE_POSITIONS)])
+
+        if not position:
+            continue
+
+        if not front_stage[position - 1]:
+            interface.show_info("No es una carta valida para atacar", "No se puede atacar")
+            continue
+
+        interface.show_card(front_stage[position - 1], "Carta atacante")
+
+        front_stage[position - 1] = None
+        gameboard.declarar_ataque(player, board.FRONT_STAGE_POSITIONS[position - 1])
+        interface.update_board(gameboard)
+
+
 def main():
     """ """
 
     interface = WindowInterface()
+    hands = [[], []]
 
     # Create decks
 
@@ -95,17 +114,21 @@ def main():
     gameboard = GameBoard(interface)
 
     # Generate hand
-    HANDS[player_index] = gameboard.draw(TURN[player_index], 4)
-    HANDS[(player_index + 1) % 2] = gameboard.draw(TURN[(player_index + 1) % 2], 4)
+    hands[player_index] = gameboard.draw(TURN[player_index], 4)
+    hands[(player_index + 1) % 2] = gameboard.draw(TURN[(player_index + 1) % 2], 4)
 
     interface.update_board(gameboard)
 
     while not gameboard.get_winner():
         player = TURN[player_index % 2]
-        player_hand = HANDS[player_index % 2]
+        player_hand = hands[player_index % 2]
 
         # TODO: names
         interface.show_info(player, "Turno jugador")
+
+        gameboard.iniciar_turno()
+        interface.update_board(gameboard)
+
 
         # Draw (firs turn skip)
         drew_card = gameboard.draw(player)[0]
@@ -116,37 +139,28 @@ def main():
 
         # Clocking
         clocking_phase(gameboard, interface, player, player_hand)
+        interface.update_board(gameboard)
         show_hand(interface, player, player_hand)
 
         # Play cards
         main_phase(gameboard, interface, "Main Phase 1", player, player_hand)
+        interface.update_board(gameboard)
 
         # Battle phase
-        front_stage = gameboard.get_front_stage_cards(player)
-        while interface.ask_yesno("Desea atacar con alguna carta?", "Fase de ataque"):
-            position = interface.get_integer("Elija carta con la que atacar:", "Seleccion de atacante",
-                                             [1, len(board.FRONT_STAGE_POSITIONS)])
-
-            if not position:
-                continue
-
-            if not front_stage[position - 1]:
-                interface.show_info("No es una carta valida para atacar", "No se puede atacar")
-                continue
-
-            interface.show_card(front_stage[position - 1], "Carta atacante")
-
-            front_stage[position - 1] = None
-            gameboard.declarar_ataque(player, board.FRONT_STAGE_POSITIONS[position - 1])
-            interface.update_board(gameboard)
+        fase_de_batalla(gameboard, interface, player)
+        interface.update_board(gameboard)
 
         show_hand(interface, player, player_hand)
         # Play cards
         main_phase(gameboard, interface, "Main Phase 2", player, player_hand)
+        interface.update_board(gameboard)
 
         # Turn end
         player_index += 1
         interface.show_info(player, "Fin turno jugador")
+
+        gameboard.terminar_turno()
+
 
     interface.show_info("Gano el jugador " + gameboard.get_winner(), "Fin del juego")
 
