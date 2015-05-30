@@ -17,11 +17,11 @@ def clocking_phase(gameboard, interface, player, player_hand):
 
     player_hand_string = "Player hand:\n\n"
     for i in range(len(player_hand)):
-        player_hand_string += "[" + str(i + 1) + "]" + str(player_hand[i])
+        player_hand_string += "[" + str(i + 1) + "]" + str(player_hand[i]) + "\n"
 
     card_to_clock = None
     while not card_to_clock:
-        i = interface.get_integer(player_hand_string, "\nChoose a card to clock", [1, len(player_hand)])
+        i = interface.get_integer(player_hand_string, "Choose a card to clock", [1, len(player_hand)])
 
         if (not i):
             return
@@ -50,7 +50,7 @@ def main_phase(gameboard, interface, phase, player, player_hand):
 
         card_to_play = None
         while not card_to_play:
-            i = interface.get_integer(player_hand_string, "\nChoose a card to play", [1, len(player_hand)])
+            i = interface.get_integer(player_hand_string, "Choose a card to play", [1, len(player_hand)])
 
             if (not i):
                 break
@@ -67,7 +67,8 @@ def main_phase(gameboard, interface, phase, player, player_hand):
 
         player_hand_string = "Player hand:\n\n"
         for i in range(len(player_hand)):
-            player_hand_string += str(player_hand[i]) + "\n\n"
+            player_hand_string += str(player_hand[i]) + "\n"
+
 
 def main():
     """ """
@@ -107,9 +108,9 @@ def main():
         main_phase(gameboard, interface, "Main Phase 1", player, player_hand)
 
         # Battle phase
-            # atack
-        interface.show_info("Aca se supone atacan","        TODO        ")
-            # revive
+        # atack
+        interface.show_info("Aca se supone atacan", "        TODO        ")
+        # revive
 
         # Play cards
         main_phase(gameboard, interface, "Main Phase 2", player, player_hand)

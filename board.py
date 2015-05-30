@@ -1,5 +1,7 @@
 import random
 
+CLOCKING_AMOUNT = 2
+
 MAX_LEVEL = 4
 
 MAX_CLOCK_LEVEL = 7
@@ -16,6 +18,8 @@ BACK_RIGHT = 1
 
 SCHWARZ_SIDE = "schwarz"
 WEISS_SIDE = "weiss"
+NONE_SIDE = ""
+
 __author__ = 'hige'
 
 from deck import Deck
@@ -26,16 +30,16 @@ class _PlayerSide(object):
     """Simulates a player field"""
 
     def __init__(self):
-        self.clock = []
-        self.stock = []
-        self.level = []
+        self.area_clock = []
+        self.area_stock = []
+        self.area_nivel = []
 
-        self.climax = None
+        self.area_climax = None
 
-        self.waiting_room = []
+        self.area_espera = []
 
-        self.front_stage = [None, None, None]
-        self.back_stage = [None, None]
+        self.escena_principal = [None, None, None]
+        self.backstage = [None, None]
 
         self.deck = Deck("swartz")
 
@@ -47,13 +51,13 @@ class _PlayerSide(object):
         :param lado_oponente:
         :return: None
         """
-        atacker_card = self.front_stage[posicion_atacante]
+        atacker_card = self.escena_principal[posicion_atacante]
         defender_card = lado_oponente.front_stage[posicion_defensor]
 
         # Empate o perdida
         if defender_card and atacker_card.power <= defender_card.power:  # Si es menor o igual se destruye el atacante
             self.destroy(posicion_atacante)
-            if atacker_card.power == defender_card.power:  #Si son iguales se destruyen ambas
+            if atacker_card.power == defender_card.power:  # Si son iguales se destruyen ambas
                 lado_oponente.destroy(posicion_defensor)
             return
 
@@ -70,20 +74,20 @@ class _PlayerSide(object):
         interface.show_card(trigger_card, "Trigered card: +" + str(trigger_icon) + " soul points")
         lado_oponente.get_hit(soul_points, interface)
 
-        self.stock.append(trigger_card)
+        self.area_stock.append(trigger_card)
 
 
     def level_up(self):
 
         # Choice
-        selected_card = random.choice(self.clock)
-        self.clock.remove(selected_card)
+        selected_card = random.choice(self.area_clock)
+        self.area_clock.remove(selected_card)
         # Choice
 
-        self.level.append(selected_card)
+        self.area_nivel.append(selected_card)
 
-        self.waiting_room += self.clock
-        self.clock = []
+        self.area_espera += self.area_clock
+        self.area_clock = []
 
     def get_hit(self, soul_points):
         damage = []
@@ -91,16 +95,20 @@ class _PlayerSide(object):
             damage.append(self.deck.draw_card())
             if isinstance(damage[-1], ClimaxCard):
                 for card in damage:
-                    self.waiting_room.append(card)
+                    self.area_espera.append(card)
                 return
 
-        self.clock += damage
+        self.area_clock += damage
 
-        if len(self.clock) >= MAX_CLOCK_LEVEL:
+        if len(self.area_clock) >= MAX_CLOCK_LEVEL:
             self.level_up()
 
     def destroy(self, card_number):
-        pass
+        """Remueve una carta de caracter del campo"""
+        card = self.escena_principal[card_number]
+        self.escena_principal[card_number] = None
+        self.area_espera.append(card)
+
 
     def draw(self, amount):
         """ """
@@ -115,48 +123,55 @@ class _PlayerSide(object):
 
     def refill_deck(self):
         """ """
-        self.deck.add_cards(self.waiting_room)
+        self.deck.add_cards(self.area_espera)
         self.deck.shuffle()
-        self.waiting_room = []
+        self.area_espera = []
 
     def get_clock_level(self):
         """ """
-        return len(self.clock)
+        return len(self.area_clock)
 
     def get_level(self):
         """ """
-        return len(self.level)
+        return len(self.area_nivel)
 
     def clocking(self, card):
-        self.clock.append(card)
-        return self.draw(2)
+        """Agrega la carta pasada por parametro al clock y devuelve las CLOCKING_AMOUNT cartas sacadas del mazo"""
+        self.area_clock.append(card)
+        return self.draw(CLOCKING_AMOUNT)
 
     def get_clock_colors(self):
+        """ Devuelve una lista con todos los colores de cartas que hay en la zona de clock
+
+        :return:
+        """
         colors = {}
-        for card in self.clock:
+        for card in self.area_clock:
             colors[card.get_color()] = 0
         return colors.keys()
 
     def get_level_colors(self):
+        """ Devuelve una lista con todos los colores de cartas que hay en la zona de nivel"""
+
         colors = {}
-        for card in self.clock:
+        for card in self.area_clock:
             colors[card.get_color()] = 0
         return colors.keys()
 
     def get_stock_colors(self):
         colors = {}
-        for card in self.clock:
+        for card in self.area_clock:
             colors[card.get_color()] = 0
         return colors.keys()
 
     def can_play_normal_card(self, card):
-        if None not in self.front_stage + self.back_stage:
+        if None not in self.escena_principal + self.backstage:
             return False
 
         if card.get_level() > self.get_level():
             return False
 
-        if card.get_cost() > len(self.stock):
+        if card.get_cost() > len(self.area_stock):
             return False
 
         playable_colors = self.get_clock_colors()
@@ -173,28 +188,27 @@ class _PlayerSide(object):
             raise ValueError, "Carta no jugable"
 
         if stage == FRONT_STAGE:
-            if self.front_stage[position]:
+            if self.escena_principal[position]:
                 raise IndexError, "Posicion ocupada"
-            self.front_stage[position] = card
+            self.escena_principal[position] = card
 
         elif stage == BACK_STAGE:
-            if self.front_stage[position]:
+            if self.backstage[position]:
                 raise IndexError, "Posicion ocupada"
-            self.front_stage[position] = card
+            self.backstage[position] = card
 
         else:
             raise ValueError, "No existe esa stage"
 
     def can_play_climax_card(self, card):
-        if self.climax:
+        if self.area_climax:
             return False
 
         playable_colors = self.get_clock_colors()
         playable_colors += self.get_level_colors()
 
         if card.get_color() not in playable_colors:
-            if card.get_level() != 0:
-                return False
+            return False
 
         return True
 
@@ -261,4 +275,4 @@ class GameBoard(object):
             return WEISS_SIDE
         if self.schwarz.get_level() == MAX_LEVEL:
             return SCHWARZ_SIDE
-        return ""
+        return NONE_SIDE
