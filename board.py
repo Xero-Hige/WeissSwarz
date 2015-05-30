@@ -186,56 +186,37 @@ class GameBoard(object):
         self.schwarz = _PlayerSide()
 
         self.interface_handler = interface
+
     def current(self, side):
-        if side == WEISS_SIDE: return self.weiss
+        if side == WEISS_SIDE:
+            return self.weiss
         return self.swartz
 
     def atack(self, side, atacker, defender):
         """ TODO: """
-        self.current(side).atack(atacker, defender, self.schwarz)
+        if side == WEISS_SIDE:
+            return self.weiss.atack(atacker, defender, self.schwarz)
+
+        elif side == SCHWARZ_SIDE:
+            return self.schwarz.atack(atacker, defender, self.weiss)
 
     def draw(self, side, amount=1):
-        """ """
-        if side == WEISS_SIDE:
-            return self.weiss.draw(amount)
-
-        elif side == SCHWARZ_SIDE:
-            return self.schwarz.draw(amount)
+        self.current(side).draw(amount)
 
     def get_side_level(self, side):
-        if side == WEISS_SIDE:
-            return self.weiss.get_level()
-
-        elif side == SCHWARZ_SIDE:
-            return self.schwarz.get_level()
+        self.current(side).get_level()
 
     def get_clock_level(self, side):
-        if side == WEISS_SIDE:
-            return self.weiss.get_clock_level()
-
-        elif side == SCHWARZ_SIDE:
-            return self.schwarz.get_clock_level()
+        self.current(side).get_clock_level()
 
     def clocking(self, side, card):
-        if side == WEISS_SIDE:
-            return self.weiss.clocking(card)
-
-        elif side == SCHWARZ_SIDE:
-            return self.schwarz.clocking(card)
+        self.current(side).clocking(card)
 
     def can_be_played(self, side, card):
-        if side == WEISS_SIDE:
-            return self.weiss.can_play_character(card)
-
-        elif side == SCHWARZ_SIDE:
-            return self.schwarz.can_play_character(card)
+        self.current(side).can_play_character(card)
 
     def play_character(self, side, card, stage, position):
-        if side == WEISS_SIDE:
-            return self.weiss.play_character(card, stage, position)
-
-        elif side == SCHWARZ_SIDE:
-            return self.schwarz.play_character(card, stage, position)
+        self.current(side).play_character(card, stage, position)
 
     def get_winner(self):
         if self.weiss.get_level() == 4:
