@@ -4,6 +4,7 @@ import random
 from time import sleep
 import tkMessageBox
 import tkSimpleDialog
+import board
 
 import card_maker
 
@@ -89,10 +90,8 @@ class WindowInterface(object):
         return self.cards_surface[card_str]
 
 
-    def __dibujar_front_stage(self, background, posicion_izquierda_front, rotacion, front_stage):
-        position = [posicion_izquierda_front, LADO_AREA_CARTA + LADO_AREA_CARTA / 12]
-
-        for card in front_stage:
+    def __dibujar_cartas_personaje(self, background, stage, position, rotacion):
+        for card in stage:
             myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 30)
 
             if card:
@@ -105,7 +104,107 @@ class WindowInterface(object):
                 card_surface = pygame.transform.rotate(card_surface, rotacion)
                 background.blit(card_surface, position)
 
-            position[1] += LADO_AREA_CARTA + LADO_AREA_CARTA / 6
+            position[1] += LADO_AREA_CARTA
+
+    def __dibujar_front_stage(self, background, posicion_izquierda_front, rotacion, front_stage):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA / 12, LADO_AREA_CARTA + (5*LADO_AREA_CARTA) / 24]
+
+        self.__dibujar_cartas_personaje(background, front_stage, position, rotacion)
+
+    def __dibujar_back_stage(self, background, posicion_izquierda_front, rotacion, front_stage):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA / 12, (3*LADO_AREA_CARTA)/2 + (5*LADO_AREA_CARTA) / 24]
+
+        self.__dibujar_cartas_personaje(background, front_stage, position, rotacion)
+
+    def __dibujar_climax_card(self, background, posicion_izquierda_front, rotacion, climax_card):
+        position = [posicion_izquierda_front+(5*LADO_AREA_CARTA) / 24, 2*LADO_AREA_CARTA + LADO_AREA_CARTA/12 ]
+
+        if not climax_card:
+            return
+
+        self.__dibujar_carta_individual(background, climax_card, position, rotacion)
+
+    def __dibujar_discard_weiss(self, background, posicion_izquierda_front, rotacion, discard_top):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA / 12, 4*LADO_AREA_CARTA + (5*LADO_AREA_CARTA) / 24]
+
+        if not discard_top:
+            return
+
+        self.__dibujar_carta_individual(background, discard_top, position, rotacion)
+
+    def __dibujar_carta_individual(self, background, discard_top, position, rotacion):
+        card_surface = self.__get_card_surface(discard_top)
+        card_surface = pygame.transform.scale(card_surface, (ANCHO_CARTA_TABLERO, ALTO_CARTA_TABLERO))
+        card_surface = pygame.transform.rotate(card_surface, rotacion)
+        background.blit(card_surface, position)
+
+    def __dibujar_discard_schwarz(self, background, posicion_izquierda_front, rotacion, discard_top):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA / 12, (5*LADO_AREA_CARTA) / 24]
+
+        if not discard_top:
+            return
+
+        self.__dibujar_carta_individual(background, discard_top, position, rotacion)
+
+    def __dibujar_clock_weiss(self, background, posicion_izquierda_front, rotacion, clock):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA / 12, LADO_AREA_CARTA + (3*LADO_AREA_CARTA) / 24]
+
+        for card in clock:
+            if card:
+                self.__dibujar_carta_individual(background, card, position, rotacion)
+
+
+            position[1] += (3*ANCHO_CARTA_TABLERO)/4
+
+    def __dibujar_clock_schwarz(self, background, posicion_izquierda_front, rotacion, clock):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA / 12, 4*LADO_AREA_CARTA - (3*LADO_AREA_CARTA) / 24 - ANCHO_CARTA_TABLERO]
+
+        for card in clock:
+            if card:
+                self.__dibujar_carta_individual(background, card, position, rotacion)
+
+
+            position[1] -= (3*ANCHO_CARTA_TABLERO)/4
+
+    def __dibujar_level_weiss(self, background, posicion_izquierda_front, rotacion, level):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA/12, LADO_AREA_CARTA/12 ]
+
+        for card in level:
+            if card:
+                self.__dibujar_carta_individual(background, card, position, rotacion)
+
+
+            position[0] += ANCHO_CARTA_TABLERO/3
+
+    def __dibujar_level_schwarz(self, background, posicion_izquierda_front, rotacion, level):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA/3, 4*LADO_AREA_CARTA+LADO_AREA_CARTA/12 ]
+
+        for card in level:
+            if card:
+                self.__dibujar_carta_individual(background, card, position, rotacion)
+
+
+            position[0] -= ANCHO_CARTA_TABLERO/3
+
+    def __dibujar_stock_weiss(self, background, posicion_izquierda_front, rotacion, stock):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA/4,LADO_AREA_CARTA/12 ]
+
+        for card in stock:
+            if card:
+                self.__dibujar_carta_individual(background, card, position, rotacion)
+
+
+            position[0] -= ANCHO_CARTA_TABLERO/3
+
+    def __dibujar_stock_schwarz(self, background, posicion_izquierda_front, rotacion, stock):
+        position = [posicion_izquierda_front+LADO_AREA_CARTA/5, 4*LADO_AREA_CARTA+ LADO_AREA_CARTA/12 ]
+
+        for card in stock:
+            if card:
+                self.__dibujar_carta_individual(background, card, position, rotacion)
+
+
+            position[0] += ANCHO_CARTA_TABLERO/3
 
     def __ganerate_board(self, gameboard):
         background = pygame.image.load("resources/background.png")
@@ -113,13 +212,36 @@ class WindowInterface(object):
 
         front_stage = gameboard.get_all_front_stage_cards()
 
-        weiss_front_stage = front_stage[:3]
-        schwarz_front_stage = front_stage[3:]
-        schwarz_front_stage = schwarz_front_stage[::-1]
+        posicion_izquierda_front = 0
+        self.__dibujar_clock_weiss (background, posicion_izquierda_front, -90 , gameboard.get_clock_cards(board.WEISS_SIDE))
+        self.__dibujar_level_weiss (background, posicion_izquierda_front, 0 , gameboard.get_level_cards(board.WEISS_SIDE))
 
-        posicion_izquierda_front = 3 * LADO_AREA_CARTA  # 3 areas anteriores (clock climax y back
-        self.__dibujar_front_stage(background, posicion_izquierda_front, -90, weiss_front_stage)
-        self.__dibujar_front_stage(background, posicion_izquierda_front + LADO_AREA_CARTA, 90, schwarz_front_stage)
+        posicion_izquierda_front += LADO_AREA_CARTA
+        self.__dibujar_climax_card(background, posicion_izquierda_front, 0 , gameboard.get_climax_card(board.WEISS_SIDE))
+        self.__dibujar_discard_weiss(background, posicion_izquierda_front, -90 , gameboard.get_top_discard_pile(board.WEISS_SIDE))
+
+        posicion_izquierda_front += LADO_AREA_CARTA
+        self.__dibujar_back_stage(background, posicion_izquierda_front, -90, gameboard.get_back_stage_cards(board.WEISS_SIDE))
+
+        posicion_izquierda_front += LADO_AREA_CARTA
+        self.__dibujar_stock_weiss(background, posicion_izquierda_front, 0 , gameboard.get_stock_cards(board.WEISS_SIDE))
+        self.__dibujar_front_stage(background, posicion_izquierda_front, -90, gameboard.get_front_stage_cards(board.WEISS_SIDE))
+
+        posicion_izquierda_front += LADO_AREA_CARTA
+        self.__dibujar_front_stage(background, posicion_izquierda_front , 90, gameboard.get_front_stage_cards(board.SCHWARZ_SIDE)[::-1])
+        self.__dibujar_stock_schwarz(background, posicion_izquierda_front, 180 , gameboard.get_stock_cards(board.SCHWARZ_SIDE))
+
+        posicion_izquierda_front += LADO_AREA_CARTA
+        self.__dibujar_back_stage(background, posicion_izquierda_front , 90, gameboard.get_back_stage_cards(board.SCHWARZ_SIDE)[::-1])
+
+        posicion_izquierda_front += LADO_AREA_CARTA
+        self.__dibujar_discard_schwarz(background, posicion_izquierda_front, 90 , gameboard.get_top_discard_pile(board.SCHWARZ_SIDE))
+        self.__dibujar_climax_card(background, posicion_izquierda_front, 180 , gameboard.get_climax_card(board.SCHWARZ_SIDE))
+
+        posicion_izquierda_front += LADO_AREA_CARTA
+        self.__dibujar_clock_schwarz (background, posicion_izquierda_front, 90 , gameboard.get_clock_cards(board.SCHWARZ_SIDE))
+        self.__dibujar_level_schwarz (background, posicion_izquierda_front, 180 , gameboard.get_level_cards(board.SCHWARZ_SIDE))
+
 
         return pygame.transform.scale(background, RESOLUTION)
 

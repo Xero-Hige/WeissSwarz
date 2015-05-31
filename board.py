@@ -424,6 +424,14 @@ class GameBoard(object):
     def get_front_stage_cards(self, side):
         return self.current(side).escena_principal[:]
 
+    def get_level_cards(self, side):
+        return self.current(side).area_nivel[:]
+
+    def get_stock_cards(self, side):
+        return self.current(side).area_clock[:]
+
+    def get_clock_cards(self, side):
+        return self.current(side).area_clock[:]
 
     def get_back_stage_cards(self, side):
         return self.current(side).backstage[:]
@@ -439,6 +447,14 @@ class GameBoard(object):
 
         return cartas
 
+    def get_top_discard_pile(self,side):
+        if self.current(side).area_espera == []:
+            return None
+        return self.current(side).area_espera[-1]
+
+
+    def get_climax_card(self,side):
+        return self.current(side).area_climax
 
     def terminar_turno(self):
         nueva_cola = []
