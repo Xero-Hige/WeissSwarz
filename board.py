@@ -248,7 +248,7 @@ class _PlayerSide(object):
                 return False
 
             position -= 1
-            if self.escena_principal[position]:
+            if escena[position]:
                 interface.show_info("No se puede jugar en esa posicion, esta ocupada", title="")
                 if not interface.ask_yesno("Elegir otra posicion?", title=""):
                     return False
@@ -428,10 +428,12 @@ class GameBoard(object):
         return self.current(side).area_nivel[:]
 
     def get_stock_cards(self, side):
-        return self.current(side).area_clock[:]
+        return self.current(side).area_stock[:]
+
 
     def get_clock_cards(self, side):
         return self.current(side).area_clock[:]
+
 
     def get_back_stage_cards(self, side):
         return self.current(side).backstage[:]
@@ -447,13 +449,13 @@ class GameBoard(object):
 
         return cartas
 
-    def get_top_discard_pile(self,side):
+    def get_top_discard_pile(self, side):
         if self.current(side).area_espera == []:
             return None
         return self.current(side).area_espera[-1]
 
 
-    def get_climax_card(self,side):
+    def get_climax_card(self, side):
         return self.current(side).area_climax
 
     def terminar_turno(self):

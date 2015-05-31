@@ -113,44 +113,6 @@ def main():
 
     gameboard = GameBoard(interface)
 
-    l = [gameboard.weiss,gameboard.schwarz]
-
-    from cards import CharacterCard
-
-    c1 = CharacterCard("Bride Saber", "green", 2, None, "\"Answer me:\n   Are you my Praetor?.\"", 0, 0, 15000,2, ("Warrior", "Heroic") )
-    c2 = CharacterCard("Elegant Lily", "yellow", 2, None,"\"Even if he is not a Master, our contract will not go away.\nI have sworn to protect him and to be his sword.\"",2, 2, 11000, 2, ("Warrior", "Heroic"))
-    c3 = CharacterCard("Archer", "red", 1, None,"\"But it's all a fake. Such hypocrisy cannot save anything.\nNo, first of all, I did not know what I wanted to save!\"", 2, 0, 8000, 1, ("Archer", "Heroic"))
-
-    for s in l:
-        s.area_climax = c1
-
-        c_ = [c1, c2, c3]
-        c_c_ = [c1, c2]
-
-        random.shuffle(c_)
-        random.shuffle(c_c_)
-
-        s.escena_principal = c_[:]
-        s.backstage = c_c_[:]
-
-        random.shuffle(c_)
-        s.area_espera = c_[:]
-
-        c_c_c_ = [c1, c2, c3, c1]
-        random.shuffle(c_c_c_)
-        s.area_nivel = c_c_c_[:]
-
-        random.shuffle(c_c_c_)
-        s.area_nivel = c_c_c_[:]
-
-        random.shuffle(c_c_c_)
-        s.area_stock = c_c_c_[:]
-        s.area_climax = random.choice([c3,c1,c2])
-
-        a=[c1,c1,c2,c2,c3,c3,c3]
-        random.shuffle(a)
-        s.area_clock = a[:]
-
     # Generate hand
     hands[player_index] = gameboard.draw(TURN[player_index], 4)
     hands[(player_index + 1) % 2] = gameboard.draw(TURN[(player_index + 1) % 2], 4)
