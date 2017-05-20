@@ -407,7 +407,6 @@ class _CampoJugador(object):
         """
         return self.area_clock.pop()
 
-
     def obtener_cantidad_recursos(self):
         """
         Devuelve la cantidad de cartas en el area de recursos.
@@ -439,6 +438,8 @@ class TableroJuego(object):
         # Negro (Schwarz)
         self.schwarz = _CampoJugador(SCHWARZ, mazo_schwarz)
         self.interfaz = interfaz
+        self.habilidades_aplicadas = []  # Debe comportarse como una pila
+        self.habilidades_turno_anterior = []  # Debe comportarse como una cola
 
     def obtener_oponente(self, jugador):
         """
@@ -704,7 +705,7 @@ class TableroJuego(object):
         while len(self.habilidades_aplicadas) > 0:  # Mientras cola no esta vacia
             side, habilidad, continuidad = self.habilidades_aplicadas.pop()  # Sacar primero
             habilidad.apply_on_board(self, side)
-            nueva_cola.append((side, habilidad, CONTINUA))
+            nueva_cola.append((side, habilidad, EFECTO_CONTINUO))
         self.habilidades_aplicadas = nueva_cola
 
     def terminar_turno(self):
@@ -714,8 +715,18 @@ class TableroJuego(object):
         para ser aplicadas en el proximo turno (en el mismo orden en el que se aplicaron en este turno).
         :return: No tiene tipo de retorno.
         """
-        raise NotImplementedError
+        pila_aux = []
+        while len(self.habilidades_aplicadas) > 0:  # Mientras la pila de habilidades aplicada no esta vacia
+            jugador, habilidad, continuidad = self.habilidades_aplicadas.pop()
+            habilidad.revertir_en_tablero(self, jugador)
+            if continuidad == EFECTO_CONTINUO:
+                pila_aux.append((jugador, habilidad, EFECTO_CONTINUO))
+            else:
+                habilidad.resetear_habilidad()
+        self.habilidades_turno_anterior = pila_aux[:]  # Pasar de la pila a la cola
 
+        self.weiss.remover_climax()
+        self.schwarz.remover_climax()
 
     def aplicar_habilidades_en_carta(self, card):
         """
@@ -724,8 +735,12 @@ class TableroJuego(object):
         :param carta: Carta sobre la que aplicar las habilidades.
         :return: No tiene valor de retorno.
         """
-        raise NotImplementedError
-
+        pila_aux = self.habilidades_aplicadas[::-1]  # Invertir pila
+        self.habilidades_aplicadas = []
+        while len(pila_aux) > 0:
+            side, habilidad, continuidad = pila_aux.pop()
+            habilidad.aplicar_en_carta(card)
+            self.habilidades_aplicadas.append((side, habilidad, EFECTO_CONTINUO))
 
     def aplicar_habilidad_sobre_tablero(self, jugador, habilidad, continuidad):
         """
@@ -736,7 +751,10 @@ class TableroJuego(object):
                             las constantes EFECTO_CONTINUO o EFECTO_TEMPORAL.
         :return: No tiene valor de retorno.
         """
-        raise NotImplementedError
+        if not habilidad:
+            return
+        habilidad.aplicar_en_tablero(self, jugador)
+        self.habilidades_aplicadas.append((jugador, habilidad, continuidad))
 
     def revertir_habilidades_sobre_carta(self, carta):
         """
@@ -744,8 +762,13 @@ class TableroJuego(object):
         :param carta:Carta a la que se le deben revertir las habilidades
         :return: No tiene valor de retorno.
         """
-        raise NotImplementedError
-
+        pila_aux = []
+        while len(self.habilidades_aplicadas) > 0:
+            jugador, habilidad, continuidad = self.habilidades_aplicadas.pop()
+            habilidad.revertir_en_carta(self, jugador)
+            pila_aux.append((jugador, habilidad, EFECTO_CONTINUO))
+        # Se rearma la pila
+        self.habilidades_aplicadas = pila_aux[::-1]
 
     def remover_habilidad(self, jugador, habilidad):
         """
@@ -754,4 +777,19 @@ class TableroJuego(object):
         :param habilidad: Habilidad a deshacer. Debe ser un objeto de una clase que herede de Habilidad.
         :return: No tiene valor de retorno.
         """
-        raise NotImplementedError
+        pila_aux = []
+        # Se desapila hasta que se encuentre la habilidad a sacar
+        while len(self.habilidades_aplicadas) > 0:
+            jugador_que_aplico, habilidad, continuidad = self.habilidades_aplicadas.pop()
+            if jugador_que_aplico == jugador and habilidad == habilidad:
+                habilidad.revertir_en_tablero(self, jugador)
+                habilidad.resetear_habilidad()
+                break
+            else:
+                habilidad.revertir_en_tablero(self, jugador)
+                pila_aux.append((jugador, habilidad, EFECTO_CONTINUO))
+        # Se reaplican las habilidades que fueron sacadas
+        while len(pila_aux) > 0:
+            jugador_que_aplico, habilidad, continuidad = pila_aux.pop()
+            habilidad.aplicar_en_tablero(self, jugador)
+            self.habilidades_aplicadas.append((jugador, habilidad, EFECTO_CONTINUO))

@@ -105,7 +105,7 @@ class Interfaz_Ventana(object):
         :return: Surface con la imagen correspondiente a la carta.
         """
         str_carta = str(carta)
-        if not self.surface_cartas.has_key(str_carta):
+        if not str_carta in self.surface_cartas:
             self.surface_cartas[str_carta] = card_maker.generar_imagen_carta(carta)
 
         return self.surface_cartas[str_carta]
