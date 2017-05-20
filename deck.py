@@ -1,9 +1,9 @@
 import random
-from carta import CartaPersonaje, CartaEvento, CartaClimax
-import habilidades
-from habilidades import *
 
-LIMITE_CARTAS_MAZO = 50
+import habilidades
+from cards import CharacterCard, EventCard, ClimaxCard
+
+LIMITE_CARTAS_MAZO = 12
 LIMITE_COPIAS_CARTA = 4
 LIMITE_CARTAS_CLIMAX = 8
 
@@ -47,7 +47,7 @@ class Mazo(object):
         try:
             mazo = open(archivo_mazo)
         except IOError:
-            raise ValueError, "El archivo no se puede abrir"
+            raise ValueError("El archivo no se puede abrir")
 
         lista_habilidades = generar_diccionario_habilidades()
 
@@ -59,7 +59,7 @@ class Mazo(object):
             cartas_totales += 1
             if cartas_totales > LIMITE_CARTAS_MAZO:
                 mazo.close()
-                raise ValueError, "El archivo contiene mas de {0} cartas".format(str(LIMITE_CARTAS_MAZO))
+                raise ValueError("El archivo contiene mas de {0} cartas".format(str(LIMITE_CARTAS_MAZO)))
 
             linea = linea.rstrip()
             campos = linea.split("|")
@@ -70,7 +70,7 @@ class Mazo(object):
             efecto_extra = int(campos[EFECTO_EXTRA])
             habilidad = None
 
-            if lista_habilidades.has_key(campos[HABILIDAD]):
+            if campos[HABILIDAD] in lista_habilidades:
                 habilidad = lista_habilidades[campos[HABILIDAD]]()
                 
             texto_decorativo = campos[TEXTO_DECORATIVO].replace("$", "\n")
@@ -79,18 +79,18 @@ class Mazo(object):
 
             if cartas_cargadas[nombre_carta] > LIMITE_COPIAS_CARTA:
                 mazo.close()
-                raise ValueError, "El archivo contiene mas de {0} copias de: {1}".format(str(LIMITE_COPIAS_CARTA),
-                                                                                         nombre_carta)
+                raise ValueError("El archivo contiene mas de {0} copias de: {1}".format(str(LIMITE_COPIAS_CARTA),
+                                                                                        nombre_carta))
 
             if tipo_carta == "CLIMAX":
                 cartas_climax += 1
 
                 if cartas_climax > LIMITE_CARTAS_CLIMAX:
                     mazo.close()
-                    raise ValueError, "El archivo contiene mas de {0} cartas climax".format(str(LIMITE_CARTAS_CLIMAX),
-                                                                                        nombre_carta)
+                    raise ValueError("El archivo contiene mas de {0} cartas climax".format(str(LIMITE_CARTAS_CLIMAX),
+                                                                                           nombre_carta))
 
-                self.cartas.append(CartaClimax(nombre_carta, color, efecto_extra, habilidad, texto_decorativo))
+                self.cartas.append(ClimaxCard(nombre_carta, color, efecto_extra, habilidad, texto_decorativo))
                 continue
 
             nivel = int(campos[NIVEL])
@@ -98,7 +98,7 @@ class Mazo(object):
 
             if tipo_carta == "EVENT":
                 self.cartas.append(
-                    CartaEvento(nombre_carta, color, efecto_extra, habilidad, texto_decorativo, nivel, coste))
+                    EventCard(nombre_carta, color, efecto_extra, habilidad, texto_decorativo, nivel, coste))
                 continue
 
             poder = int(campos[PODER])
@@ -107,14 +107,14 @@ class Mazo(object):
 
             if tipo_carta == "CHARACTER":
                 self.cartas.append(
-                    CartaPersonaje(nombre_carta, color, efecto_extra, habilidad, texto_decorativo, nivel, coste, poder,
-                                   puntos_de_alma, tipos))
+                    CharacterCard(nombre_carta, color, efecto_extra, habilidad, texto_decorativo, nivel, coste, poder,
+                                  puntos_de_alma, tipos))
 
         mazo.close()
 
         if cartas_totales < LIMITE_CARTAS_MAZO:
             mazo.close()
-            raise ValueError, "El archivo contiene menos de {0} cartas".format(str(LIMITE_CARTAS_MAZO))
+            raise ValueError("El archivo contiene menos de {0} cartas".format(str(LIMITE_CARTAS_MAZO)))
 
     def __init__(self, archivo_mazo):
         self.cartas = []

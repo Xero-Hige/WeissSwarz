@@ -1,6 +1,8 @@
 from time import sleep
-from carta import CartaPersonaje, CartaClimax, CartaEvento
+
 import pygame
+
+from cards import CharacterCard, ClimaxCard, EventCard
 
 pygame.init()
 ANCHO_CARTA = 448
@@ -331,15 +333,17 @@ def generar_imagen_carta(carta):
     :param carta: Carta para la que se desea generar la imagen.
     :return: Surface de pygame, que es la imagen generada para la carta.
     """
-    if isinstance(carta, CartaClimax):
+    if isinstance(carta, ClimaxCard):
         return generar_imagen_climax(carta)
-    elif isinstance(carta, CartaPersonaje):
+    elif isinstance(carta, CharacterCard):
         return generar_imagen_personaje(carta)
-    elif isinstance(carta, CartaEvento):
+    elif isinstance(carta, EventCard):
         return generar_imagen_evento(carta)
     else:
-        raise TypeError, "No es una carta, no se generar una imagen"
+        raise TypeError("No es una carta, no se generar una imagen")
 
+
+# TODO: Change from isinstance to a better aproach
 
 def mostrar_carta(carta, texto="", tiempo=2):
     """
@@ -350,17 +354,17 @@ def mostrar_carta(carta, texto="", tiempo=2):
     :param tiempo: Tiempo que se mostrara la imagen.
     :return: No tiene valor de retorno.
     """
-    if isinstance(carta, CartaClimax):
+    if isinstance(carta, ClimaxCard):
         pantalla = pygame.display.set_mode((ANCHO_CLIMAX, ALTO_CLIMAX))
         imagen_carta = generar_imagen_climax(carta)
-    elif isinstance(carta, CartaPersonaje):
+    elif isinstance(carta, CharacterCard):
         pantalla = pygame.display.set_mode((ANCHO_CARTA, ALTO_CARTA))
         imagen_carta = generar_imagen_personaje(carta)
-    elif isinstance(carta, CartaEvento):
+    elif isinstance(carta, EventCard):
         pantalla = pygame.display.set_mode((ANCHO_CARTA, ALTO_CARTA))
         imagen_carta = generar_imagen_evento(carta)
     else:
-        raise TypeError, "Eso no es una carta, no se puede mostrar"
+        raise TypeError("Eso no es una carta, no se puede mostrar")
 
     pantalla.blit(imagen_carta, (0, 0))
     pygame.display.set_caption(texto)

@@ -1,7 +1,7 @@
 # coding=utf-8
 import random
 
-from carta import CartaClimax, CartaPersonaje, CartaEvento
+from cards import ClimaxCard, CharacterCard, EventCard
 
 BENEFICIO_AUMENTAR_CLOCK = 2
 
@@ -135,10 +135,10 @@ class _CampoJugador(object):
         """
         # Se envian al area de clock tantas cartas como puntos de daño se reciba
         cartas_a_descartar = []
-        for c in xrange(puntos_alma):
+        for c in range(puntos_alma):
             cartas_a_descartar.append(self.mazo.robar_carta())
             # Si la carta es una carta de climax, se cancela el daño y las cartas ya robadas van al area de espera
-            if isinstance(cartas_a_descartar[-1], CartaClimax):
+            if isinstance(cartas_a_descartar[-1], ClimaxCard):
                 interfaz.mostrar_informacion("Sacada carta: {0}\n Daño cancelado".format(str(cartas_a_descartar[-1])),
                                              "Daño cancelado")
                 for carta in cartas_a_descartar:
@@ -284,7 +284,7 @@ class _CampoJugador(object):
         :param costo_a_pagar: Entero mayor o igual a 0, que indica el costo a pagar (cantidad de cartas a mover).
         :return: No tiene valor de retorno.
         """
-        for c in xrange(costo_a_pagar):
+        for c in range(costo_a_pagar):
             carta = self.area_recursos.pop()
             self.area_espera.append(carta)
 
@@ -509,17 +509,17 @@ class TableroJuego(object):
         :param carta: Carta que se quiere jugar.
         :return: Booleano que indica si se pudo jugar la carta o no.
         """
-        if isinstance(carta, CartaPersonaje):
+        if isinstance(carta, CharacterCard):
             if self.jugar_personaje(jugador, carta):
                 self.aplicar_habilidad_sobre_tablero(jugador, carta.obtener_habilidad(), EFECTO_CONTINUO)
                 return True
             return False
-        elif isinstance(carta, CartaEvento):
+        elif isinstance(carta, EventCard):
             if self.jugar_evento(jugador, carta):
                 self.aplicar_habilidad_sobre_tablero(jugador, carta.obtener_habilidad(), EFECTO_TEMPORAL)
                 return True
             return False
-        elif isinstance(carta, CartaClimax):
+        elif isinstance(carta, ClimaxCard):
             if self.jugar_climax(jugador, carta):
                 self.aplicar_habilidad_sobre_tablero(jugador, carta.obtener_habilidad(), EFECTO_TEMPORAL)
                 return True
@@ -603,7 +603,7 @@ class TableroJuego(object):
         :param carta: Carta que se quiere verificar si puede ser jugada.
         :return: Booleano que indica si se puede o no jugar la carta.
         """
-        if isinstance(carta, CartaClimax):
+        if isinstance(carta, ClimaxCard):
             return self.obtener_campo_jugador(jugador).puede_jugar_carta_climax(carta)
         else:
             return self.obtener_campo_jugador(jugador).puede_jugar_carta(carta)
@@ -700,7 +700,12 @@ class TableroJuego(object):
         en el mismo orden que fueron aplicado en este.
         :return: No tiene valor de retorno.
         """
-        raise NotImplementedError
+        nueva_cola = []
+        while len(self.habilidades_aplicadas) > 0:  # Mientras cola no esta vacia
+            side, habilidad, continuidad = self.habilidades_aplicadas.pop()  # Sacar primero
+            habilidad.apply_on_board(self, side)
+            nueva_cola.append((side, habilidad, CONTINUA))
+        self.habilidades_aplicadas = nueva_cola
 
     def terminar_turno(self):
         """

@@ -1,7 +1,8 @@
 import random
-from mazo import Mazo
-from tablero import TableroJuego, WEISS, SCHWARZ, POSICIONES_CAMPO_FRONTAL
-from interfaz import Interfaz_Ventana
+
+from board import TableroJuego, WEISS, SCHWARZ, POSICIONES_CAMPO_FRONTAL
+from deck import Mazo
+from interface import Interfaz_Ventana
 
 MAZO_SCHWARZ = "schwarz.csv"
 MAZO_WEISS = "weiss.csv"

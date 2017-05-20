@@ -1,12 +1,13 @@
-from Tkinter import Tk, Label
-import pygame
 import random
+import tkinter.messagebox as tkMessageBox
+import tkinter.simpledialog as tkSimpleDialog
 from time import sleep
-import tkMessageBox
-import tkSimpleDialog
-from tablero import WEISS, SCHWARZ
+from tkinter import Tk, Label
 
-import creador_cartas
+import pygame
+
+import card_maker
+from board import WEISS, SCHWARZ
 
 CRUZ = "cruz"
 CARA = "cara"
@@ -105,7 +106,7 @@ class Interfaz_Ventana(object):
         """
         str_carta = str(carta)
         if not self.surface_cartas.has_key(str_carta):
-            self.surface_cartas[str_carta] = creador_cartas.generar_imagen_carta(carta)
+            self.surface_cartas[str_carta] = card_maker.generar_imagen_carta(carta)
 
         return self.surface_cartas[str_carta]
 

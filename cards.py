@@ -1,4 +1,4 @@
-class Carta(object):
+class Card(object):
     """ Clase que define atributos y metodos basicos de las cartas. Se usa como base para los distintos tipos
         de carta. """
 
@@ -52,7 +52,7 @@ class Carta(object):
         return self.habilidad
 
 
-class CartaPersonaje(Carta):
+class CharacterCard(Card):
     """ Clase que representa a las cartas de tipo Personaje. """
 
     def __init__(self, nombre, color, efecto_extra, habilidad, texto_decorativo, nivel, costo, poder, puntos_alma, subtipos):
@@ -127,7 +127,7 @@ class CartaPersonaje(Carta):
         return self.nombre + " (" + str(self.nivel) + "," + str(self.costo) + " " + self.color + ")"
 
 
-class CartaEvento(Carta):
+class EventCard(Card):
     """ Clase que representa a las cartas de tipo Evento. """
 
     def __init__(self, nombre, color, efecto_extra, habilidad, texto_decorativo, nivel, costo):
@@ -165,7 +165,7 @@ class CartaEvento(Carta):
         return self.nombre + " (" + str(self.nivel) + "," + str(self.costo) + " " + self.color + ")"
 
 
-class CartaClimax(Carta):
+class ClimaxCard(Card):
     """ Clase que representa a las cartas de tipo climax. """
 
     def __str__(self):

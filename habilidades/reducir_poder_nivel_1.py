@@ -1,4 +1,4 @@
-from habilidad import Habilidad
+from habilidades.habilidad import Habilidad
 
 NOMBRE_HABILIDAD = "Reducir Poder Nivel 1"
 
