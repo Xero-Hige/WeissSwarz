@@ -1,506 +1,752 @@
 # coding=utf-8
 import random
 
-CLOCKING_AMOUNT = 2
+from carta import CartaClimax, CartaPersonaje, CartaEvento
 
-MAX_LEVEL = 4
+BENEFICIO_AUMENTAR_CLOCK = 2
 
-MAX_CLOCK_LEVEL = 7
+NIVEL_MAX = 4
+CLOCK_PARA_NIVEL = 7
 
-BACK_STAGE = 2
-FRONT_STAGE = 1
+RETAGUARDIA = 2
+CAMPO_FRONTAL = 1
+ZONAS = [RETAGUARDIA, CAMPO_FRONTAL]
 
-STAGES = [BACK_STAGE, FRONT_STAGE]
+FRONTAL_IZQUIERDA = -1
+FRONTAL_CENTRO = 0
+FRONTAL_DERECHA = 1
+POSICIONES_CAMPO_FRONTAL = [FRONTAL_IZQUIERDA, FRONTAL_CENTRO, FRONTAL_DERECHA]
 
-FRONT_LEFT = -1
-FRONT_CENTER = 0
-FRONT_RIGHT = 1
+RETAGUARDIA_IZQUIERDA = 0
+RETAGUARDIA_DERECHA = 1
+POSICIONES_RETAGUARDIA = [RETAGUARDIA_IZQUIERDA, RETAGUARDIA_DERECHA]
 
-FRONT_STAGE_POSITIONS = [FRONT_LEFT, FRONT_CENTER, FRONT_RIGHT]
+SCHWARZ = "Schwarz"
+WEISS = "Weiss"
 
-BACK_LEFT = 0
-BACK_RIGHT = 1
+SIN_GANADOR = ""
 
-BACK_STAGE_POSITIONS = [BACK_LEFT, BACK_RIGHT]
+EFECTO_CONTINUO = 0
+EFECTO_TEMPORAL = 1
 
-SCHWARZ_SIDE = "Schwarz"
-WEISS_SIDE = "Weiss"
-NONE_SIDE = ""
-
-CONTINUA = 0
-TEMPORAL = 1
-
-__author__ = 'hige'
-
-from deck import Deck
-from cards import ClimaxCard, CharacterCard, EventCard
+POSICION_DESTRUIR_DEFENSOR = 1
+POSICION_DESTRUIR_ATACANTE = 0
 
 
-class _PlayerSide(object):
-    """Simulates a player field"""
+class _CampoJugador(object):
+    """ Campo de un jugador. Mantiene el estado de su campo de juego, ejecuta y resuelve las acciones efectuadas por el
+        jugador y las fases del juego (robar cartas, poner en el campo, combate, etc.)."""
 
-    def __init__(self, nombre):
+    def __init__(self, nombre, mazo):
+        """
+        :param nombre: Nombre del jugador.
+        :param mazo: Mazo del jugador
+        :return: No tiene valor de retorno.
+        """
         self.area_clock = []
-        self.area_stock = []
+        self.area_recursos = []
         self.area_nivel = []
-
         self.area_climax = None
-
         self.area_espera = []
+        self.campo_frontal = [None, None, None]
+        self.retaguardia = [None, None]
 
-        self.escena_principal = [None, None, None]
-        self.backstage = [None, None]
-
-        self.deck = Deck("swartz")
-
+        self.mazo = mazo
         self.nombre = nombre
 
-    def declarar_ataque(self, posicion_atacante, posicion_defensor, lado_oponente, interface):
+    def recibir_ataque(self, posicion_atacante, posicion_defensor, campo_oponente, interfaz):
         """
-
-        :param posicion_atacante:
-        :param posicion_defensor:
-        :param lado_oponente:
-        :return: Una lista de la forma [posicion_atacante_destruir,posicion_defensor_destruir]. -1 en caso que no haya que destruir
+        Resuelve el combate entre la carta en posicion_atacante en el campo frontal del jugador y la carta en
+        posicion_defensor del campo frontal del oponente. Devuelve el resultado del ataque, indicando que carta/s
+        deben destruirse.
+        :param posicion_atacante: Posicion en el campo del atacante de la carta atacante. Debe ser una de las
+                                  constantes FRONTAL_IZQUIERDA,FRONTAL_CENTRO o FRONTAL_DERECHA.
+        :param posicion_defensor: Posicion en el campo del defensor de la carta defensora. Debe ser una de las
+                                  constantes FRONTAL_IZQUIERDA,FRONTAL_CENTRO o FRONTAL_DERECHA.
+        :param campo_oponente: Referencia a un objeto de clase _CampoJugador, que corresponde al campo del oponente.
+        :param interfaz: Referencia a la interfaz grafica.
+        :return: Lista de la forma [destruir_atacante, destruir_defensora]. Cada posicion es True si la carta debe ser
+        destruida, False en caso contrario.
         """
-        posicion_atacante = FRONT_STAGE_POSITIONS.index(posicion_atacante)
-        posicion_defensor = FRONT_STAGE_POSITIONS.index(posicion_defensor)
+        numero_carta_atacante = POSICIONES_CAMPO_FRONTAL.index(posicion_atacante)
+        numero_carta_defensor = POSICIONES_CAMPO_FRONTAL.index(posicion_defensor)
+        carta_atacante = self.campo_frontal[numero_carta_atacante]
+        carta_defensora = campo_oponente.campo_frontal[numero_carta_defensor]
+        resultado = [False, False]
 
-        atacker_card = self.escena_principal[posicion_atacante]
-        defender_card = lado_oponente.escena_principal[posicion_defensor]
+        # Si el atacante tiene poder igual o menor al defensor, el combate resulta en empate o derrota
+        if carta_defensora and carta_atacante.poder <= carta_defensora.poder:
+            # Em ambos casos se destruye el atacante
+            resultado[POSICION_DESTRUIR_ATACANTE] = True
+            # Si tienen el mismo poder, es un empate y se destruye también el defensor
+            if carta_atacante.poder == carta_defensora.poder:
+                resultado[POSICION_DESTRUIR_DEFENSOR] = True
+            return resultado
 
-        resultado = [-1, -1]
+        # Si se gana el combate (haya o no defensor), se activa el efecto extra del ataque
+        carta_efecto_extra = self.mazo.robar_carta()
+        puntos_efecto_extra = carta_efecto_extra.obetener_puntos_efecto_extra()
+        puntos_alma = carta_atacante.puntos_alma + puntos_efecto_extra
 
-        # Empate o perdida
-        if defender_card and atacker_card.power <= defender_card.power:  # Si es menor o igual se destruye el atacante
-            resultado[0] = posicion_atacante
-            if atacker_card.power == defender_card.power:  # Si son iguales se destruyen ambas
-                resultado[0] = posicion_defensor
-            return
+        # Si no hay defensor, es un ataque directo y suma bono a los puntos de alma
+        if not carta_defensora:
+            puntos_alma += 1
+        # Si hay defensor y su poder es menor que el atacante, se destruye
+        elif carta_atacante.poder > carta_defensora.poder:
+            resultado[POSICION_DESTRUIR_DEFENSOR] = True
 
-        trigger_card = self.deck.draw_card()
-        trigger_icon = trigger_card.get_trigger_icon()
-        soul_points = atacker_card.soul_points + trigger_icon
-
-        if not defender_card:  # Ataque directo
-            soul_points += 1
-
-        elif atacker_card.power > defender_card.power:
-            resultado[0] = posicion_defensor
-
-        interface.show_card(trigger_card, "Trigered card: +" + str(trigger_icon) + " soul points")
-        lado_oponente.get_hit(soul_points, interface)
-
-        self.area_stock.append(trigger_card)
+        # Se muestra la carta del efecto extra y el bono que suma en la interfaz
+        interfaz.mostrar_carta(carta_efecto_extra,
+                               "Carta efecto extra: +" + str(puntos_efecto_extra) + " puntos de alma")
+        # Se aplica el daño al oponente
+        campo_oponente.resolver_ataque(puntos_alma, interfaz)
+        # La carta de efecto extra se guarda como recurso
+        self.area_recursos.append(carta_efecto_extra)
 
         return resultado
 
-    def level_up(self, interface):
-
-        # Choice
-        selected_card = random.choice(self.area_clock)
-        self.area_clock.remove(selected_card)
-        # Choice
-
-        self.area_nivel.append(selected_card)
-
+    def subir_nivel(self, interfaz):
+        """
+        Sube el nivel del jugador. Vacia el area de clock, colocando una carta aleatoria en el area de nivel y el resto
+        en el area de espera.
+        :param interfaz: Referencia a la interfaz grafica.
+        :return: No tiene valor de retorno.
+        """
+        # Eleccion de la carta a mover de zona
+        carta_seleccionada = random.choice(self.area_clock)
+        self.area_clock.remove(carta_seleccionada)
+        self.area_nivel.append(carta_seleccionada)
+        # Vacia el area de clock
         self.area_espera += self.area_clock
         self.area_clock = []
 
-        interface.show_info("Jugador: " + self.nombre + " subio de nivel\n\nNivel actual:" + str(self.get_level()),
-                            "Aumento de nivel")
+        interfaz.mostrar_informacion(
+            "Jugador: " + self.nombre + " subio de nivel\n\nNivel actual:" + str(self.obtener_nivel()),
+            "Aumento de nivel")
 
-
-    def get_hit(self, soul_points, interface):
-        damage = []
-        for x in xrange(soul_points):
-            damage.append(self.deck.draw_card())
-            if isinstance(damage[-1], ClimaxCard):
-                interface.show_info("Sacada carta: {0}\n Daño cancelado".format(str(damage[-1])), "Daño cancelado")
-                for card in damage:
-                    self.area_espera.append(card)
+    def resolver_ataque(self, puntos_alma, interfaz):
+        """
+        Aplica un daño igual a la cantidad de puntos de alma recibidos por parametro. Roba del mazo esa cantidad de
+        cartas y las envia al area de clock, salvo que el daño sea cancelado por una carta de Climax. En ese caso, se
+        dejan de robar cartas, y las ya tomadas se envian al area de espera.
+        :param puntos_alma: Puntos de alma de la carta que esta haciendo el daño. Debe ser un entero mayor a 0.
+        :param interfaz: Referencia a la interfaz grafica.
+        :return: No tiene valor de retorno.
+        """
+        # Se envian al area de clock tantas cartas como puntos de daño se reciba
+        cartas_a_descartar = []
+        for c in xrange(puntos_alma):
+            cartas_a_descartar.append(self.mazo.robar_carta())
+            # Si la carta es una carta de climax, se cancela el daño y las cartas ya robadas van al area de espera
+            if isinstance(cartas_a_descartar[-1], CartaClimax):
+                interfaz.mostrar_informacion("Sacada carta: {0}\n Daño cancelado".format(str(cartas_a_descartar[-1])),
+                                             "Daño cancelado")
+                for carta in cartas_a_descartar:
+                    self.area_espera.append(carta)
                 return
+        self.area_clock += cartas_a_descartar
 
-        self.area_clock += damage
+        interfaz.mostrar_informacion("El jugador " + self.nombre + " recibio " + str(puntos_alma) + " puntos de daño",
+                                     "Daño recibido")
 
-        interface.show_info("Jugador " + self.nombre + "daño recibido: " + str(soul_points) + " puntos de daño",
-                            "Daño hecho")
+        # Si la cantidad de cartas en el area de clock es suficiente para subir de nivel, se sube
+        if len(self.area_clock) >= CLOCK_PARA_NIVEL:
+            self.subir_nivel(interfaz)
 
-        if len(self.area_clock) >= MAX_CLOCK_LEVEL:
-            self.level_up(interface)
+    def remover_carta(self, zona_campo, posicion_carta):
+        """
+        Remueve la carta del campo y la envia a la zona de espera.
+        :param zona_campo: Zona en la que se encuentra la carta a remover. Debe ser una de las constantes CAMPO_FRONTAL
+                           o RETAGUARDIA.
+        :param posicion_carta: Posicion en la zona del campo de la carta. Debe ser una de las constantes
+                               FRONTAL_IZQUIERDA,FRONTAL_CENTRO o FRONTAL_DERECHA si es del campo frontal, o
+                               RETAGUARDIA_IZQUIERDA o RETAGUARDIA_DERECHA si es de la retaguardia.
+        :return: La carta removida.
+        """
+        if zona_campo == CAMPO_FRONTAL:
+            numero_de_carta = POSICIONES_CAMPO_FRONTAL.index(posicion_carta)
+            carta_removida = self.campo_frontal[numero_de_carta]
+            self.campo_frontal[numero_de_carta] = None
+        elif zona_campo == RETAGUARDIA:
+            numero_de_carta = POSICIONES_RETAGUARDIA.index(posicion_carta)
+            carta_removida = self.retaguardia[numero_de_carta]
+            self.retaguardia[numero_de_carta] = None
+        self.area_espera.append(carta_removida)
+        return carta_removida
 
-    def remove_card(self, escena, card_number):
-        """Remueve una carta de caracter del campo"""
-        if escena == FRONT_STAGE:
-            card = self.escena_principal[card_number]
-            self.escena_principal[card_number] = None
-        elif escena == BACK_STAGE:
-            card = self.backstage[card_number]
-            self.backstage[card_number] = None
+    def robar_cartas(self, cantidad):
+        """
+        Roba del mazo la cantidad de cartas especificada. Si el mazo contiene menos cartas que las que se quieren
+        robar, se toman todas las que haya y se recarga el mazo.
+        :param cantidad: Cantidad de cartas a remover. Debe ser un entero mayor o igual a 0.
+        :return: Lista con las cartas que se robaron del mazo.
+        """
+        cartas_robadas = []
+        while (not self.mazo.esta_vacio()) and (cantidad > len(cartas_robadas)):
+            cartas_robadas.append(self.mazo.robar_carta())
 
-        self.area_espera.append(card)
+        if self.mazo.esta_vacio():
+            self.recargar_mazo()
 
+        return cartas_robadas
 
-    def draw(self, amount):
-        """ """
-        cards = []
-        while (not self.deck.is_empty()) and (amount > len(cards)):
-            cards.append(self.deck.draw_card())
-
-        if self.deck.is_empty():
-            self.refill_deck()
-
-        return cards
-
-    def refill_deck(self):
-        """ """
-        self.deck.add_cards(self.area_espera)
-        self.deck.shuffle()
+    def recargar_mazo(self):
+        """
+        Saca todas las cartas del area de espera y las coloca mezcladas en el mazo (tenga o no otras cartas).
+        :return: No tiene valor de retorno.
+        """
+        self.mazo.agregar_cartas(self.area_espera)
+        self.mazo.mezclar()
         self.area_espera = []
 
-    def get_clock_level(self):
-        """ """
+    def obtener_cantidad_clock(self):
+        """
+        Devuelve la cantidad de cartas en el area de clock.
+        :return: Entero mayor o igual a 0, igual a la cantidad de cartas en el area de clock.
+        """
         return len(self.area_clock)
 
-    def get_level(self):
-        """ """
+    def obtener_nivel(self):
+        """
+        Devuelve el nivel del jugador, que es igual a la cantidad de cartas en el area de nivel.
+        :return: Entero mayor o igual a 0, igual a la cantidad de cartas en el area de nivel.
+        """
         return len(self.area_nivel)
 
-    def clocking(self, card):
-        """Agrega la carta pasada por parametro al clock y devuelve las CLOCKING_AMOUNT cartas sacadas del mazo"""
-        self.area_clock.append(card)
-        return self.draw(CLOCKING_AMOUNT)
-
-    def get_clock_colors(self):
-        """ Devuelve una lista con todos los colores de cartas que hay en la zona de clock
-
-        :return:
+    def aumentar_clock(self, carta):
         """
-        colors = {}
-        for card in self.area_clock:
-            colors[card.get_color()] = 0
-        return colors.keys()
+        Coloca la carta pasada por parametro en el area de clock, y roba del mazo una cantidad de cartas igual a la
+        constante BENEFICIO_AUMENTAR_CLOCK.
+        :param carta: Carta a poner en el area de clock.
+        :return: Lista de las cartas robadas del mazo.
+        """
+        self.area_clock.append(carta)
+        return self.robar_cartas(BENEFICIO_AUMENTAR_CLOCK)
 
-    def get_level_colors(self):
-        """ Devuelve una lista con todos los colores de cartas que hay en la zona de nivel"""
+    def obtener_colores_clock(self):
+        """
+        Devuelve una lista con todos los colores de cartas que hay en el area de clock.
+        :return: Lista de strings.
+        """
+        colores = {}
+        for carta in self.area_clock:
+            colores[carta.obtener_color()] = 0
+        return colores.keys()
 
-        colors = {}
-        for card in self.area_clock:
-            colors[card.get_color()] = 0
-        return colors.keys()
+    def obtener_colores_nivel(self):
+        """
+        Devuelve una lista con todos los colores de cartas que hay en el area de nivel.
+        :return: Lista de strings.
+        """
+        colores = {}
+        for carta in self.area_nivel:
+            colores[carta.obtener_color()] = 0
+        return colores.keys()
 
-    def get_stock_colors(self):
-        colors = {}
-        for card in self.area_clock:
-            colors[card.get_color()] = 0
-        return colors.keys()
+    def obtener_colores_recursos(self):
+        """
+        Devuelve una lista con todos los colores de cartas que hay en el area de recursos.
+        :return: Lista de strings.
+        """
+        colores = {}
+        for carta in self.area_recursos:
+            colores[carta.obtener_color()] = 0
+        return colores.keys()
 
-    def can_play_normal_card(self, card):
-        if None not in self.escena_principal + self.backstage:
+    def puede_jugar_carta(self, carta):
+        """
+        Devuelve si la carta pasada por parametro pueda ser jugada o no.
+        :param carta: Carta que se quiere jugar.
+        :return: Booleano que indica si la carta pasada puede jugarse o no.
+        """
+        # Se chequea si hay lugar en el campo
+        if None not in self.campo_frontal + self.retaguardia:
             return False
-
-        if card.get_level() > self.get_level():
+        # Se chequea si el nivel del jugador es mayor o igual que el de la carta
+        if carta.obtener_nivel() > self.obtener_nivel():
             return False
-
-        if card.get_cost() > len(self.area_stock):
+        # Se chequea si la cantidad de cartas en el area de recursos alcanzan para pagar el costo de la carta
+        if carta.obtener_costo() > len(self.area_recursos):
             return False
-
-        playable_colors = self.get_clock_colors()
-        playable_colors += self.get_level_colors()
-
-        if card.get_color() not in playable_colors:
-            if card.get_level() != 0:
+        # Se chequea si se pueden jugar cartas de ese color
+        playable_colors = self.obtener_colores_clock()
+        playable_colors += self.obtener_colores_nivel()
+        if carta.obtener_color() not in playable_colors:
+            if carta.obtener_nivel() != 0:
                 return False
 
         return True
 
-    def pagar_coste(self, coste_a_pagar):
-        for coste in range(coste_a_pagar):
-            cost_card = self.area_stock.pop(-1)  # Desapilo
-            self.area_espera.append(cost_card)
+    def pagar_costo(self, costo_a_pagar):
+        """
+        Desapila del area de recursos una cantidad de cartas igual al costo pasado por parametro, y las mueve al area
+        de espera.
+        :param costo_a_pagar: Entero mayor o igual a 0, que indica el costo a pagar (cantidad de cartas a mover).
+        :return: No tiene valor de retorno.
+        """
+        for c in xrange(costo_a_pagar):
+            carta = self.area_recursos.pop()
+            self.area_espera.append(carta)
 
-    def play_character(self, card, interface):
-        if not self.can_play_normal_card(card):
+    def jugar_personaje(self, carta, interfaz):
+        """
+        Coloca, si se puede, la carta de personaje pasada por parametro en el campo. Despliega menues para seleccionar
+        en que zona del campo y posicion jugar la carta. Devuelve si la carta se pudo jugar o no.
+        :param carta: Carta de personaje que se quiere jugar.
+        :param interfaz: Referencia a la interfaz grafica.
+        :return: Booleano que indica si la carta fue colocada en el campo o no.
+        """
+        if not self.puede_jugar_carta(carta):
             return False
 
         while True:
-            stage = interface.get_integer("Ingrese la stage donde jugar la carta:\n\n[1] Front stage\n[2] Back_stage",
-                                          title="Seleccion de stage", number_range=[1, len(STAGES) + 1])
+            seleccion_zona = interfaz.obtener_entero("Ingrese la zona del campo donde jugar la carta:\n\n"
+                                                     "[1] Campo frontal\n[2] Retaguardia",
+                                                     titulo="Seleccion de zona del campo", intervalo=[1, len(ZONAS)])
+            if not seleccion_zona:
+                return False
+            zona_campo = None
+            posicion = None
 
-            if not stage:
+            if seleccion_zona == CAMPO_FRONTAL:
+                posicion = interfaz.obtener_entero(
+                    "Ingrese la posicion dentro de la zona del campo:\n\n"
+                    "Posiciones: [1-" + str(len(POSICIONES_CAMPO_FRONTAL)) + "]",
+                    titulo="Seleccion de posicion", intervalo=[1, len(POSICIONES_CAMPO_FRONTAL)])
+                zona_campo = self.campo_frontal
+            elif seleccion_zona == RETAGUARDIA:
+                posicion = interfaz.obtener_entero(
+                    "Ingrese la posicion dentro de la zona del campo:\n\n"
+                    "Posiciones: [1-" + str(len(POSICIONES_RETAGUARDIA)) + "]",
+                    titulo="Seleccion de posicion", intervalo=[1, len(POSICIONES_RETAGUARDIA)])
+                zona_campo = self.retaguardia
+
+            if not posicion:
                 return False
 
-            escena = None
-            position = None
-
-            if stage == FRONT_STAGE:
-                position = interface.get_integer(
-                    "Ingrese la posicion dentro del stage:\n\nAreas: [1-" + str(len(FRONT_STAGE_POSITIONS)) + "]",
-                    title="Seleccion de area", number_range=[1, len(FRONT_STAGE_POSITIONS)])
-                escena = self.escena_principal
-            elif stage == BACK_STAGE:
-                position = interface.get_integer(
-                    "Ingrese la posicion dentro del stage:\n\nAreas: [1-" + str(len(BACK_STAGE_POSITIONS)) + "]",
-                    title="Seleccion de area", number_range=[1, len(BACK_STAGE_POSITIONS)])
-                escena = self.backstage
-
-            if not position:
-                return False
-
-            position -= 1
-            if escena[position]:
-                interface.show_info("No se puede jugar en esa posicion, esta ocupada", title="")
-                if not interface.ask_yesno("Elegir otra posicion?", title=""):
+            posicion -= 1
+            if zona_campo[posicion]:
+                interfaz.mostrar_informacion("No se puede jugar en esa posicion, esta ocupada", titulo="")
+                if not interfaz.preguntar_si_no("Elegir otra posicion?", titulo=""):
                     return False
             else:
-                escena[position] = card
-                self.pagar_coste(card.get_cost())
+                zona_campo[posicion] = carta
+                self.pagar_costo(carta.obtener_costo())
                 return True
 
-
-    def can_play_climax_card(self, card):
+    def puede_jugar_carta_climax(self, carta):
+        """
+        Devuelve si la carta de climax pasada por parametro pueda ser jugada o no.
+        :param carta: Carta de climax que se quiere jugar.
+        :return: Booleano que indica si la carta de climax pasada puede jugarse o no.
+        """
+        # Si hay una carta en el area de climax no puede jugarse otra
         if self.area_climax:
             return False
 
-        playable_colors = self.get_clock_colors()
-        playable_colors += self.get_level_colors()
-
-        if card.get_color() not in playable_colors:
+        colores_jugables = self.obtener_colores_clock()
+        colores_jugables += self.obtener_colores_nivel()
+        if carta.obtener_color() not in colores_jugables:
             return False
 
         return True
 
-    def play_event(self, card, interface_handler):
-        if not self.can_play_normal_card(card):
+    def jugar_evento(self, carta, interfaz):
+        """
+        Juega, si se puede, la carta de evento pasada por parametro. Devuelve si la carta se pudo jugar o no.
+        :param carta: Carta de evento que se quiere jugar.
+        :param interfaz: Referencia a la interfaz grafica.
+        :return: Booleano que indica si la carta fue jugada o no.
+        """
+        if not self.puede_jugar_carta(carta):
             return False
-        self.pagar_coste(card.get_cost())
+        self.pagar_costo(carta.obtener_costo())
+        self.area_espera.append(carta)
         return True
 
-    def play_climax(self, card, interface_handler):
-        if not self.can_play_climax_card(card):
+    def jugar_climax(self, carta, interfaz):
+        """
+        Coloca, si se puede, la carta de climax pasada por parametro en el campo. Devuelve si la carta se pudo jugar.
+        :param carta: Carta de climax que se quiere jugar.
+        :param interfaz: Referencia a la interfaz grafica.
+        :return: Booleano que indica si la carta fue jugada o no.
+        """
+        if not self.puede_jugar_carta_climax(carta):
             return False
-        self.area_climax = card
+        self.area_climax = carta
         return True
 
     def remover_climax(self):
+        """
+        Remueve la carta del area de climax, si hay alguna, y la coloca en el area de espera.
+        :return: No tiene valor de retorno.
+        """
         if not self.area_climax:
             return
         self.area_espera.append(self.area_climax)
         self.area_climax = None
 
+    def obtener_mazo(self):
+        """
+        Devuelve el mazo
+        """
+        return self.mazo
 
-class GameBoard(object):
-    """Simulates the gameboard"""
+    def descartar_carta(self, carta):
+        """
+        Agrega una carta al tope de la zona de espera
+        :param carta: Carta que se quiere descartar
+        :return: No tiene valor de retorno
+        """
+        self.area_espera.append(carta)
 
-    def __init__(self, interface):
-        """Creates an empty gameboard"""
+    def remover_carta_clock(self):
+        """
+        Saca la ultima carta del area de clock
+        :return: Carta la ultima carta del area de clock
+        """
+        return self.area_clock.pop()
 
-        # White (Weiss)
-        self.weiss = _PlayerSide(WEISS_SIDE)
 
-        # Black (Schwarz)
-        self.schwarz = _PlayerSide(SCHWARZ_SIDE)
+    def obtener_cantidad_recursos(self):
+        """
+        Devuelve la cantidad de cartas en el area de recursos.
+        :return: Entero mayor o igual a 0, igual a la cantidad de cartas en el area de recursos.
+        """
+        return len(self.area_recursos)
 
-        self.interface_handler = interface
+    def obtener_area_nivel(self):
+        """
+        Devuelve el area de nivel
+        :return: Lista con las cartas del area de nivel
+        """
+        return self.area_nivel
 
-        self.habilidades_aplicadas = []  # cola
 
-    def current(self, side):
-        if side == WEISS_SIDE:
+class TableroJuego(object):
+    """ Tablero de juego. Mantiene los campos de los dos jugadores, las habilidades aplicadas (tanto actuales como en
+        turnos anteriores) y la referencia a la interfaz grafica. Ejecuta y resuelve las acciones efectuadas por los
+        jugadores y las fases del juego (robar cartas, poner en el campo, combate, etc.)."""
+
+    def __init__(self, interfaz, mazo_weiss, mazo_schwarz):
+        """
+        :param interfaz: Refencia a la interfaz grafica.
+        :param mazo_*: Referencia a un mazo
+        :return: No tiene valor de retorno.
+        """
+        # Blanco (Weiss)
+        self.weiss = _CampoJugador(WEISS, mazo_weiss)
+        # Negro (Schwarz)
+        self.schwarz = _CampoJugador(SCHWARZ, mazo_schwarz)
+        self.interfaz = interfaz
+
+    def obtener_oponente(self, jugador):
+        """
+        Devuelve el oponente del jugador pasado por parametro.
+        :param jugador: Jugador del que se desea obtener el oponente. Debe ser una de las constantes WEISS o SCHWARZ.
+        :return: Constante WEISS o SCHWARZ, dependiendo del jugador pasado por parametro.
+        """
+        if jugador == WEISS:
+            return SCHWARZ
+        return WEISS
+
+    def obtener_campo_jugador(self, jugador):
+        """
+        Devuelve el campo de juego del jugador cuyo turno se esta jugando actualmente.
+        :param jugador: Jugador actual. Debe ser una de las constantes WEISS o SCHWARZ.
+        :return: _CampoJugador que corresponde al jugador actual.
+        """
+        if jugador == WEISS:
             return self.weiss
         return self.schwarz
 
-    def declarar_ataque(self, side, posicion_atacante):
+    def remover_carta(self, jugador, zona_campo, posicion_carta):
         """
-
-        :param side:
-        :param posicion_atacante:Posicion en el tablero del jugador de la carta que ataca Left Center Right (ctes)
-        :return:
+        Remueve la carta del campo del jugador y la envia a la zona de espera.
+        :param jugador: Jugador al que se le removera la carta. Debe ser una de las constantes WEISS o SCHWARZ.
+        :param zona_campo: Zona en la que se encuentra la carta a remover. Debe ser una de las constantes CAMPO_FRONTAL
+                           o RETAGUARDIA.
+        :param posicion_carta: Posicion en la zona del campo de la carta. Debe ser una de las constantes
+                               FRONTAL_IZQUIERDA,FRONTAL_CENTRO o FRONTAL_DERECHA si es del campo frontal, o
+                               RETAGUARDIA_IZQUIERDA o RETAGUARDIA_DERECHA si es de la retaguardia.
+        :return: La carta removida.
         """
+        campo_jugador = self.obtener_campo_jugador(jugador)
+        carta_removida = campo_jugador.remover_carta(zona_campo, posicion_carta)
+        self.revertir_habilidades_sobre_carta(carta_removida)
+        self.remover_habilidad(jugador, carta_removida.obtener_habilidad())
 
-        atacante = None
-        defensor = None
-        enemy_side = None
-        if side == WEISS_SIDE:
-            atacante = self.weiss
-            defensor = self.schwarz
-            enemy_side = SCHWARZ_SIDE
-        elif side == SCHWARZ_SIDE:
-            defensor = self.weiss
-            atacante = self.schwarz
-            enemy_side = SCHWARZ_SIDE
+    def declarar_ataque(self, jugador, posicion_atacante):
+        """
+        Efectua y resuelve el ataque de la carta que se encuentra en la posicion pasada por parametro el campo del
+        jugador pasado. Remueve las cartas que correspondan como resultado del ataque, y revierte las habilidades
+        aplicadas sobre ellas (si las hay).
+        :param jugador: Jugador atacante. Debe ser una de las constantes WEISS o SCHWARZ.
+        :param posicion_atacante: Posicion en el campo frontal del jugador de la carta atacante. Debe ser una de las
+                                  constantes FRONTAL_IZQUIERDA, FRONTAL_CENTRO o FRONTAL_DERECHA.
+        :return: No tiene valor de retorno.
+        """
+        campo_atacante = None
+        campo_defensor = None
+        if jugador == WEISS:
+            campo_atacante = self.weiss
+            campo_defensor = self.schwarz
+        elif jugador == SCHWARZ:
+            campo_atacante = self.schwarz
+            campo_defensor = self.weiss
+        oponente = self.obtener_oponente(jugador)
+        posicion_defensora = -1 * posicion_atacante
+        resultado = campo_atacante.recibir_ataque(posicion_atacante, posicion_defensora, campo_defensor, self.interfaz)
+        if resultado[POSICION_DESTRUIR_ATACANTE]:
+            self.remover_carta(jugador, CAMPO_FRONTAL, posicion_atacante)
+        if resultado[POSICION_DESTRUIR_DEFENSOR]:
+            self.remover_carta(oponente, CAMPO_FRONTAL, posicion_defensora)
 
-        resultado = atacante.declarar_ataque(posicion_atacante, -1 * posicion_atacante, defensor,
-                                             self.interface_handler)
-
-        if (resultado[0] != -1):
-            removed_card = atacante.remove_card(FRONT_STAGE, FRONT_STAGE_POSITIONS.index(resultado[0]))
-            self.desaplicar_habilidades(side, removed_card)
-            self.remover_habilidad(side, removed_card.get_ability())
-
-        if (resultado[1] != -1):
-            removed_card = defensor.remove_card(FRONT_STAGE, FRONT_STAGE_POSITIONS.index(resultado[1]))
-            self.desaplicar_habilidades(enemy_side, removed_card)
-            self.remover_habilidad(enemy_side, removed_card.get_ability())
-
-    def play_card(self, side, card):
-        if isinstance(card, CharacterCard):
-            if self.play_character(side, card):
-                self.aplicar_habilidad(side, card.get_ability(), CONTINUA)
+    def jugar_carta(self, jugador, carta):
+        """
+        Juega, si se puede, la carta pasada por parametro. Devuelve si la carta pudo jugarse o no.
+        :param jugador: Jugador que juega la carta. Debe ser una de las constantes WEISS o SCHWARZ.
+        :param carta: Carta que se quiere jugar.
+        :return: Booleano que indica si se pudo jugar la carta o no.
+        """
+        if isinstance(carta, CartaPersonaje):
+            if self.jugar_personaje(jugador, carta):
+                self.aplicar_habilidad_sobre_tablero(jugador, carta.obtener_habilidad(), EFECTO_CONTINUO)
                 return True
             return False
-
-        elif isinstance(card, EventCard):
-            if self.play_event(side, card):
-                self.aplicar_habilidad(side, card.get_ability(), TEMPORAL)
+        elif isinstance(carta, CartaEvento):
+            if self.jugar_evento(jugador, carta):
+                self.aplicar_habilidad_sobre_tablero(jugador, carta.obtener_habilidad(), EFECTO_TEMPORAL)
                 return True
             return False
-
-
-        elif isinstance(card, ClimaxCard):
-            if self.play_climax(side, card):
-                self.aplicar_habilidad(side, card.get_ability(), TEMPORAL)
+        elif isinstance(carta, CartaClimax):
+            if self.jugar_climax(jugador, carta):
+                self.aplicar_habilidad_sobre_tablero(jugador, carta.obtener_habilidad(), EFECTO_TEMPORAL)
                 return True
             return False
-
         else:
             return False
 
-
-    def play_character(self, side, card):
-        if not self.current(side).play_character(card, self.interface_handler):
+    def jugar_personaje(self, jugador, carta):
+        """
+        Coloca, si se puede, la carta de personaje pasada por parametro en el campo del jugador pasado. Devuelve si la
+        carta de personaje se pudo jugar o no.
+        :param jugador: Jugador que juega la carta. Debe ser una de las constantes WEISS o SCHWARZ.
+        :param carta: Carta de personaje que se quiere jugar.
+        :return: Booleano que indica si la carta fue colocada en el campo o no.
+        """
+        if not self.obtener_campo_jugador(jugador).jugar_personaje(carta, self.interfaz):
             return False
-
-        nueva_cola = []
-        while len(self.habilidades_aplicadas) > 0:  # Mientras cola no esta vacia
-            side, habilidad, continuidad = self.habilidades_aplicadas.pop()  # Sacar primero
-            habilidad.apply_on_card(card)
-            nueva_cola.append((side, habilidad, CONTINUA))
-        self.habilidades_aplicadas = nueva_cola
-
+        self.aplicar_habilidades_en_carta(carta)
         return True
 
+    def jugar_evento(self, jugador, carta):
+        """
+        Juega, si se puede, la carta de evento pasada por parametro. Devuelve si la carta se pudo jugar o no.
+        :param jugador: Jugador que juega la carta. Debe ser una de las constantes WEISS o SCHWARZ.
+        :param carta: Carta de evento que se quiere jugar.
+        :return: Booleano que indica si la carta fue jugada o no.
+        """
+        return self.obtener_campo_jugador(jugador).jugar_evento(carta, self.interfaz)
 
-    def play_event(self, side, card):
-        return self.current(side).play_event(card, self.interface_handler)
+    def jugar_climax(self, jugador, carta):
+        """
+        Coloca, si se puede, la carta de climax pasada por parametro en el campo del jugador pasado. Devuelve si la
+        carta se pudo jugar.
+        :param jugador: Jugador que juega la carta. Debe ser una de las constantes WEISS o SCHWARZ.
+        :param carta: Carta de climax que se quiere jugar.
+        :return: Booleano que indica si la carta fue jugada o no.
+        """
+        return self.obtener_campo_jugador(jugador).jugar_climax(carta, self.interfaz)
 
+    def robar_cartas(self, jugador, cantidad=1):
+        """
+        Roba del mazo del jugador pasado por parametro la cantidad de cartas especificada. Si el mazo contiene menos
+        cartas que las que se quieren robar, se toman todas las que haya y se recarga el mazo.
+        :param jugador: Jugador que roba las cartas. Debe ser una de las constantes WEISS o SCHWARZ.
+        :param cantidad: Cantidad de cartas a remover. Debe ser un entero mayor o igual a 0.
+        :return: Lista con las cartas que se robaron del mazo.
+        """
+        return self.obtener_campo_jugador(jugador).robar_cartas(cantidad)
 
-    def play_climax(self, side, card):
-        return self.current(side).play_climax(card, self.interface_handler)
+    def obtener_nivel_jugador(self, jugador):
+        """
+        Devuelve el nivel del jugador pasado por parametro.
+        :param jugador: Debe ser una de las constantes WEISS o SCHWARZ.
+        :return: Entero mayor o igual a 0 que indica el nivel del jugador.
+        """
+        return self.obtener_campo_jugador(jugador).obtener_nivel()
 
+    def obtener_cantidad_clock(self, jugador):
+        """
+        Devuelve la cantidad de cartas en el area de clock del jugador pasado por parametro.
+        :param jugador: Debe ser una de las constantes WEISS o SCHWARZ.
+        :return: Entero mayor o igual a 0 que indica la cantidad de cartas en el area de clock del jugador.
+        """
+        return self.obtener_campo_jugador(jugador).obtener_cantidad_clock()
 
-    def draw(self, side, amount=1):
-        return self.current(side).draw(amount)
+    def aumentar_clock(self, jugador, carta):
+        """
+        Coloca la carta pasada por parametro en el area de clock del jugador, y roba del mazo del mismo una cantidad de
+        cartas igual a la constante BENEFICIO_AUMENTAR_CLOCK.
+        :param jugador: Debe ser una de las constantes WEISS o SCHWARZ.
+        :param carta: Carta a poner en el area de clock.
+        :return: Lista de las cartas robadas del mazo.
+        """
+        return self.obtener_campo_jugador(jugador).aumentar_clock(carta)
 
-
-    def get_side_level(self, side):
-        return self.current(side).get_level()
-
-
-    def get_clock_level(self, side):
-        return self.current(side).get_clock_level()
-
-
-    def clocking(self, side, card):
-        return self.current(side).clocking(card)
-
-
-    def can_be_played(self, side, card):
-        if isinstance(card, ClimaxCard):
-            return self.current(side).can_play_climax_card(card)
-
+    def puede_jugar_carta(self, jugador, carta):
+        """
+        Verifica si el jugador pasado por parametro puede jugar la carta pasada. Devuelve True si puede hacerlo, False
+        en caso contrario.
+        :param jugador: Jugador que quiere jugar la carta. Debe ser una de las constantes WEISS o SCHWARZ.
+        :param carta: Carta que se quiere verificar si puede ser jugada.
+        :return: Booleano que indica si se puede o no jugar la carta.
+        """
+        if isinstance(carta, CartaClimax):
+            return self.obtener_campo_jugador(jugador).puede_jugar_carta_climax(carta)
         else:
-            return self.current(side).can_play_normal_card(card)
+            return self.obtener_campo_jugador(jugador).puede_jugar_carta(carta)
 
+    def obtener_ganador(self):
+        """
+        Devuelve el jugador ganador si hay uno (constantes WEISS o SCHWARZ), o SIN_GANADOR si no hay uno.
+        :return: Constante WEISS, SCHWARZ o SIN_SIN_GANADOR.
+        """
+        if self.weiss.obtener_nivel() == NIVEL_MAX:
+            return SCHWARZ
+        if self.schwarz.obtener_nivel() == NIVEL_MAX:
+            return WEISS
+        return SIN_GANADOR
 
-    def get_winner(self):
-        if self.weiss.get_level() == MAX_LEVEL:
-            return WEISS_SIDE
-        if self.schwarz.get_level() == MAX_LEVEL:
-            return SCHWARZ_SIDE
-        return NONE_SIDE
+    def obtener_cartas_campo_frontal(self, jugador):
+        """
+        Obtiene las cartas del campo frontal del jugador pasado por parametro y la devuelve.
+        :param jugador: Jugador del que se quiere obtener el campo frontal. Debe ser una de las constantes WEISS o
+                        SCHWARZ.
+        :return: Lista de cartas.
+        """
+        return self.obtener_campo_jugador(jugador).campo_frontal[:]
 
+    def obtener_cartas_nivel(self, jugador):
+        """
+        Obtiene las cartas del area de nivel del jugador pasado por parametro y la devuelve.
+        :param jugador: Jugador del que se quiere obtener el campo frontal. Debe ser una de las constantes WEISS o
+                        SCHWARZ.
+        :return: Lista de cartas.
+        """
+        return self.obtener_campo_jugador(jugador).area_nivel[:]
 
-    def get_front_stage_cards(self, side):
-        return self.current(side).escena_principal[:]
+    def obtener_cartas_recursos(self, jugador):
+        """
+        Obtiene las cartas del area de recursos del jugador pasado por parametro y la devuelve.
+        :param jugador: Jugador del que se quiere obtener el campo frontal. Debe ser una de las constantes WEISS o
+                        SCHWARZ.
+        :return: Lista de cartas.
+        """
+        return self.obtener_campo_jugador(jugador).area_recursos[:]
 
-    def get_level_cards(self, side):
-        return self.current(side).area_nivel[:]
+    def obtener_cartas_clock(self, jugador):
+        """
+        Obtiene las cartas del area de clock del jugador pasado por parametro y la devuelve.
+        :param jugador: Jugador del que se quiere obtener el campo frontal. Debe ser una de las constantes WEISS o
+                        SCHWARZ.
+        :return: Lista de cartas.
+        """
+        return self.obtener_campo_jugador(jugador).area_clock[:]
 
-    def get_stock_cards(self, side):
-        return self.current(side).area_stock[:]
+    def obtener_cartas_retaguardia(self, jugador):
+        """
+        Obtiene las cartas de la retaguardia del jugador pasado por parametro y la devuelve.
+        :param jugador: Jugador del que se quiere obtener el campo frontal. Debe ser una de las constantes WEISS o
+                        SCHWARZ.
+        :return: Lista de cartas.
+        """
+        return self.obtener_campo_jugador(jugador).retaguardia[:]
 
-
-    def get_clock_cards(self, side):
-        return self.current(side).area_clock[:]
-
-
-    def get_back_stage_cards(self, side):
-        return self.current(side).backstage[:]
-
-
-    def get_all_front_stage_cards(self):
-        """Devuelve una lista de cartas con las cartas de la escena principal.
-            Las primeras 3 posiciones corresponden a las cartas de weiss, las ultimas 3 a las cartas schwarz."""
-
+    def obtener_todas_campo_frontal(self):
+        """
+        Devuelve una lista con todas las cartas que se encuentran en los campos frontales de ambos jugadores.
+        :return: Lista de cartas. Las primeras tres cartas son las del jugador Weiss y las ultimas tres de Schwarz.
+        """
         cartas = []
-        cartas += self.weiss.escena_principal
-        cartas += self.schwarz.escena_principal
-
+        cartas += self.weiss.campo_frontal
+        cartas += self.schwarz.campo_frontal
         return cartas
 
-    def get_top_discard_pile(self, side):
-        if self.current(side).area_espera == []:
+    def obtener_tope_espera(self, jugador):
+        """
+        Devuelve la carta que se encuentra en el tope del area de espera, o None si no hay ninguna.
+        :param jugador: Jugador del que se quiere obtener el tope del area de espera. Debe ser una de las constantes
+                        WEISS o SCHWARZ.
+        :return: Carta del tope del area de espera, o None si el area esta vacia.
+        """
+        if self.obtener_campo_jugador(jugador).area_espera == []:
             return None
-        return self.current(side).area_espera[-1]
+        return self.obtener_campo_jugador(jugador).area_espera[-1]
 
-
-    def get_climax_card(self, side):
-        return self.current(side).area_climax
-
-    def terminar_turno(self):
-        nueva_cola = []
-        while len(self.habilidades_aplicadas) > 0:  # Mientras cola no esta vacia
-            side, habilidad, continuidad = self.habilidades_aplicadas.pop()  # Sacar primero
-            habilidad.revert_on_board(self, side)
-            if continuidad == CONTINUA:
-                nueva_cola.append((side, habilidad, CONTINUA))
-        self.habilidades_aplicadas = nueva_cola
-
-        self.weiss.remover_climax()
-        self.schwarz.remover_climax()
-
+    def obtener_climax(self, jugador):
+        """
+        Devuelve la carta del area de climax del jugador pasado por parametro, si hay una.
+        :param jugador: Jugador del que se quiere obtener la carta del area de climax. Debe ser una de las constantes
+                        WEISS o SCHWARZ.
+        :return: Carta del area de climax, o None si el area esta vacia.
+        """
+        return self.obtener_campo_jugador(jugador).area_climax
 
     def iniciar_turno(self):
-        nueva_cola = []
-        while len(self.habilidades_aplicadas) > 0:  # Mientras cola no esta vacia
-            side, habilidad, continuidad = self.habilidades_aplicadas.pop()  # Sacar primero
-            habilidad.apply_on_board(self, side)
-            nueva_cola.append((side, habilidad, CONTINUA))
-        self.habilidades_aplicadas = nueva_cola
+        """
+        Inicia el turno aplicando las habilidades que quedaron en el campo durante el turno anterior
+        en el mismo orden que fueron aplicado en este.
+        :return: No tiene valor de retorno.
+        """
+        raise NotImplementedError
+
+    def terminar_turno(self):
+        """
+        Termina el turno. Revierte todos los efectos de las cartas aplicadas en el campo
+        en el orden inverso en que fueron aplicadas. Las habilidades EFECTO_CONTINUO deben guardarse
+        para ser aplicadas en el proximo turno (en el mismo orden en el que se aplicaron en este turno).
+        :return: No tiene tipo de retorno.
+        """
+        raise NotImplementedError
 
 
-    def aplicar_habilidad(self, side, habilidad, continuidad):
-        if not habilidad:
-            return
-        habilidad.apply_on_board(self, side)
-        self.habilidades_aplicadas.append((side, habilidad, continuidad))
+    def aplicar_habilidades_en_carta(self, card):
+        """
+        Aplica las habilidades activas en el campo a la carta pasada como parametro. Se deben
+        aplicar en el orden que se aplicaron originalmente.
+        :param carta: Carta sobre la que aplicar las habilidades.
+        :return: No tiene valor de retorno.
+        """
+        raise NotImplementedError
 
-    def desaplicar_habilidades(self, side, card):
-        """Le remueve las habilidades aplicadas a una carta"""
-        nueva_cola = []
-        while len(self.habilidades_aplicadas) > 0:  # Mientras cola no esta vacia
-            side, habilidad, continuidad = self.habilidades_aplicadas.pop()  # Sacar primero
-            habilidad.revert_on_card(self, side)
-            nueva_cola.append((side, habilidad, CONTINUA))
-        self.habilidades_aplicadas = nueva_cola
 
-    def remover_habilidad(self, side, undo_ability):
-        nueva_cola = []
-        while len(self.habilidades_aplicadas) > 0:  # Mientras cola no esta vacia
-            ability_side, habilidad, continuidad = self.habilidades_aplicadas.pop()  # Sacar primero
-            if ability_side == side and habilidad == undo_ability:
-                habilidad.revert_on_board(self, side)
-            else:
-                nueva_cola.append((side, habilidad, CONTINUA))
-        self.habilidades_aplicadas = nueva_cola
+    def aplicar_habilidad_sobre_tablero(self, jugador, habilidad, continuidad):
+        """
+        Aplica la habilidad pasada por parametro al campo del jugador pasado.
+        :param jugador: Jugador en el que se aplica la habilidad.
+        :param habilidad: Referencia a la habilidad a aplicar. Debe ser un objeto de una clase que herede de Habilidad.
+        :param continuidad: Indica si es una habilidad continua o que solo tiene efecto por un turno. Debe ser una de
+                            las constantes EFECTO_CONTINUO o EFECTO_TEMPORAL.
+        :return: No tiene valor de retorno.
+        """
+        raise NotImplementedError
+
+    def revertir_habilidades_sobre_carta(self, carta):
+        """
+        Revierte los efectos sobre la carta pasada como paramtero en el orden inverso en que fueron aplicados.
+        :param carta:Carta a la que se le deben revertir las habilidades
+        :return: No tiene valor de retorno.
+        """
+        raise NotImplementedError
+
+
+    def remover_habilidad(self, jugador, habilidad):
+        """
+        Remueve la habilidad pasada por parametro, aplicada por el jugador pasado, de la pila de habilidades aplicadas.
+        :param jugador: Jugador que aplico la habilidad originalmente. Debe ser una de las constantes WEISS o SCHWARZ.
+        :param habilidad: Habilidad a deshacer. Debe ser un objeto de una clase que herede de Habilidad.
+        :return: No tiene valor de retorno.
+        """
+        raise NotImplementedError

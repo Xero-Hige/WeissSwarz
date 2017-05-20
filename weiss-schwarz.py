@@ -1,168 +1,179 @@
 import random
+from mazo import Mazo
+from tablero import TableroJuego, WEISS, SCHWARZ, POSICIONES_CAMPO_FRONTAL
+from interfaz import Interfaz_Ventana
 
-from  board import GameBoard
-import board
-from interface import WindowInterface
+MAZO_SCHWARZ = "schwarz.csv"
+MAZO_WEISS = "weiss.csv"
 
-__author__ = 'hige'
+CANTIDAD_CARTAS_INICIALES = 5
 
-TURN = [board.SCHWARZ_SIDE, board.WEISS_SIDE]
+TURNO = [SCHWARZ, WEISS]
 
 
-def clocking_phase(gameboard, interface, player, player_hand):
-    if not interface.ask_yesno("Desea clockear una carta?", "Clocking phase"):
+def fase_clock(tablero, interfaz, jugador, mano_jugador):
+    """
+    Resuelve una fase de clock, interactuando con el usuario y descartando y robando cartas segun corresponda
+    :param tablero: Tablero de juego. Es un objeto de clase TableroJuego ya inicializado.
+    :param interfaz: Referencia a la interfaz grafica.
+    :param jugador: Jugador actual, a cuyo turno corresponde la fase de clock que se esta resolviendo. Debe ser una de
+                    las constantes SCHWARZ o WEISS de tablero.py.
+    :param mano_jugador: Lista de cartas que corresponde a la mano del jugador actual.
+    :return: No tiene valor de retorno.
+    """
+    if not interfaz.preguntar_si_no("Desea aumentar el clock descartando una carta?", "Fase de clock"):
         return
+    string_mano_jugador = "Mano del jugador:\n\n"
+    for i in range(len(mano_jugador)):
+        string_mano_jugador += "[" + str(i + 1) + "]" + str(mano_jugador[i]) + "\n"
 
-    player_hand_string = "Player hand:\n\n"
-    for i in range(len(player_hand)):
-        player_hand_string += "[" + str(i + 1) + "]" + str(player_hand[i]) + "\n"
-
-    card_to_clock = None
-    while not card_to_clock:
-        i = interface.get_integer(player_hand_string, "Choose a card to clock", [1, len(player_hand)])
-
+    carta_a_descartar = None
+    while not carta_a_descartar:
+        i = interfaz.obtener_entero(string_mano_jugador, "Elija una carta para descartar", [1, len(mano_jugador)])
         if (not i):
             return
-
-        interface.show_card(player_hand[i - 1])
-        if not interface.ask_yesno("Clock: " + str(player_hand[i - 1]) + "?", "Clocking card"):
+        interfaz.mostrar_carta(mano_jugador[i - 1])
+        if not interfaz.preguntar_si_no("Descartar " + str(mano_jugador[i - 1]) + "?", "Aumentar clock"):
             continue
+        carta_a_descartar = mano_jugador[i - 1]
+        mano_jugador.remove(carta_a_descartar)
 
-        card_to_clock = player_hand[i - 1]
-        player_hand.remove(card_to_clock)
+    cartas_robadas = tablero.aumentar_clock(jugador, carta_a_descartar)
+    for i in range(len(cartas_robadas)):
+        interfaz.mostrar_carta(cartas_robadas[i], "Carta robada numero " + str(i + 1))
+        mano_jugador.append(cartas_robadas[i])
 
-    drew_cards = gameboard.clocking(player, card_to_clock)
-    for i in range(len(drew_cards)):
-        interface.show_card(drew_cards[i], "Drew " + str(i + 1) + " Card")
-        player_hand.append(drew_cards[i])
-
-    interface.update_board(gameboard)
+    interfaz.actualizar_tablero(tablero)
 
 
-def main_phase(gameboard, interface, phase, player, player_hand):
-    player_hand_string = "Player hand:\n\n"
-    for i in range(len(player_hand)):
-        player_hand_string += str(player_hand[i]) + "\n"
-    while interface.ask_yesno(player_hand_string + "\nDesea jugar una carta?", phase):
-        player_hand_string = "Player hand:\n\n"
-        for i in range(len(player_hand)):
-            player_hand_string += "[" + str(i + 1) + "]" + str(player_hand[i]) + "\n"
+def fase_principal(tablero, interfaz, fase, jugador, mano_jugador):
+    """
+    Resuelve una fase principal.
+    :param tablero: Tablero de juego. Es un objeto de clase TableroJuego ya inicializado.
+    :param interfaz: Referencia a la interfaz grafica.
+    :param fase: String que contiene que fase principal es la que se esta resolviendo.
+    :param jugador: Jugador actual, a cuyo turno corresponde la fase principal que se esta resolviendo. Debe ser una de
+                    las constantes tablero.SCHWARZ o tablero.WEISS.
+    :param mano_jugador: Lista de cartas que corresponde a la mano del jugador actual.
+    :return: No tiene valor de retorno.
+    """
+    string_mano_jugador = "Mano del jugador:\n\n"
+    for i in range(len(mano_jugador)):
+        string_mano_jugador += str(mano_jugador[i]) + "\n"
+    while interfaz.preguntar_si_no(string_mano_jugador + "\nDesea jugar una carta?", fase):
+        string_mano_jugador = "Mano del jugador:\n\n"
+        for i in range(len(mano_jugador)):
+            string_mano_jugador += "[" + str(i + 1) + "]" + str(mano_jugador[i]) + "\n"
 
-        card_to_play = None
-        while not card_to_play:
-            i = interface.get_integer(player_hand_string, "Choose a card to play", [1, len(player_hand)])
-
+        carta_a_jugar = None
+        while not carta_a_jugar:
+            i = interfaz.obtener_entero(string_mano_jugador, "Elija una carta a jugar", [1, len(mano_jugador)])
             if (not i):
                 break
-
-            if not gameboard.can_be_played(player, player_hand[i - 1]):
-                interface.show_info("No se puede jugar: " + str(player_hand[i - 1]))
+            if not tablero.puede_jugar_carta(jugador, mano_jugador[i - 1]):
+                interfaz.mostrar_informacion("No se puede jugar: " + str(mano_jugador[i - 1]))
                 continue
-
-            interface.show_card(player_hand[i - 1], "Card to play")
-            if not interface.ask_yesno("Play: " + str(player_hand[i - 1]) + "?", "Card"):
+            interfaz.mostrar_carta(mano_jugador[i - 1], "Carta a jugar")
+            if not interfaz.preguntar_si_no("Jugar " + str(mano_jugador[i - 1]) + "?", "Carta a jugar"):
                 continue
-            card_to_play = player_hand[i - 1]
+            carta_a_jugar = mano_jugador[i - 1]
+            if tablero.jugar_carta(jugador, carta_a_jugar):
+                mano_jugador.remove(carta_a_jugar)
+                interfaz.actualizar_tablero(tablero)
 
-            if gameboard.play_card(player, card_to_play):
-                player_hand.remove(card_to_play)
-                interface.update_board(gameboard)
-
-        player_hand_string = "Player hand:\n\n"
-        for i in range(len(player_hand)):
-            player_hand_string += str(player_hand[i]) + "\n"
-
-
-def show_hand(interface, player, player_hand):
-    player_hand_string = "Player hand:\n\n"
-    for i in range(len(player_hand)):
-        player_hand_string += str(player_hand[i]) + "\n"
-    interface.show_info(player_hand_string, "Mano del jugador " + player)
+        string_mano_jugador = "Mano del jugador:\n\n"
+        for i in range(len(mano_jugador)):
+            string_mano_jugador += str(mano_jugador[i]) + "\n"
 
 
-def fase_de_batalla(gameboard, interface, player):
-    front_stage = gameboard.get_front_stage_cards(player)
-    while interface.ask_yesno("Desea atacar con alguna carta?", "Fase de ataque"):
-        position = interface.get_integer("Elija carta con la que atacar:", "Seleccion de atacante",
-                                         [1, len(board.FRONT_STAGE_POSITIONS)])
+def mostrar_mano(interfaz, jugador, mano_jugador):
+    """
+    Muestra, a traves de la interfaz, la mano del jugador.
+    :param interfaz: Referencia a la interfaz grafica.
+    :param jugador: Jugador al que le pertenece la mano a mostrar. Debe ser una de las constantes tablero.SCHWARZ o tablero.WEISS.
+    :param mano_jugador: Lista de cartas que corresponde a la mano del jugador actual.
+    :return: No tiene valor de retorno.
+    """
+    string_mano_jugador = "Mano del jugador:\n\n"
+    for i in range(len(mano_jugador)):
+        string_mano_jugador += str(mano_jugador[i]) + "\n"
+    interfaz.mostrar_informacion(string_mano_jugador, "Mano del jugador " + jugador)
 
-        if not position:
+
+def fase_combate(tablero, interfaz, jugador):
+    """
+    Resuelve una fase de combate.
+    :param tablero: Tablero de juego. Es un objeto de clase TableroJuego ya inicializado.
+    :param interfaz: Referencia a la interfaz grafica.
+    :param jugador: Jugador actual, a cuyo turno corresponde la fase de combate que se esta resolviendo. Debe ser una de
+                    las constantes tablero.SCHWARZ o tablero.WEISS.
+    :return: No tiene valor de retorno.
+    """
+    campo_frontal = tablero.obtener_cartas_campo_frontal(jugador)
+    while interfaz.preguntar_si_no("Desea atacar con alguna carta?", "Fase de ataque"):
+        posicion = interfaz.obtener_entero("Elija carta con la que atacar:", "Seleccion de atacante",
+                                        [1, len(POSICIONES_CAMPO_FRONTAL)])
+        if not posicion:
             continue
-
-        if not front_stage[position - 1]:
-            interface.show_info("No es una carta valida para atacar", "No se puede atacar")
+        if not campo_frontal[posicion - 1]:
+            interfaz.mostrar_informacion("No es una carta valida para atacar", "No se puede atacar")
             continue
-
-        interface.show_card(front_stage[position - 1], "Carta atacante")
-
-        front_stage[position - 1] = None
-        gameboard.declarar_ataque(player, board.FRONT_STAGE_POSITIONS[position - 1])
-        interface.update_board(gameboard)
+        interfaz.mostrar_carta(campo_frontal[posicion - 1], "Carta atacante")
+        campo_frontal[posicion - 1] = None
+        tablero.declarar_ataque(jugador, POSICIONES_CAMPO_FRONTAL[posicion - 1])
+        interfaz.actualizar_tablero(tablero)
 
 
 def main():
-    """ """
-
-    interface = WindowInterface()
-    hands = [[], []]
-
+    interfaz = Interfaz_Ventana()
+    # Manos de los jugadores
+    manos = [[], []]
     # Create decks
+    mazo_weiss = Mazo(MAZO_WEISS)
+    mazo_schwarz = Mazo(MAZO_SCHWARZ)
+    # Decidir quien empieza
+    indice_jugador = random.choice([0, 1])
+    # Inicializacion del tablero
+    tablero = TableroJuego(interfaz, mazo_weiss, mazo_schwarz)
+    # Generacion de las manos de los jugadores
+    manos[indice_jugador] = tablero.robar_cartas(TURNO[indice_jugador], CANTIDAD_CARTAS_INICIALES - 1)
+    manos[(indice_jugador + 1) % 2] = tablero.robar_cartas(TURNO[(indice_jugador + 1) % 2], CANTIDAD_CARTAS_INICIALES)
 
-    # Decides order
-    player_index = random.choice([0, 1])
+    interfaz.actualizar_tablero(tablero)
 
-    gameboard = GameBoard(interface)
-
-    # Generate hand
-    hands[player_index] = gameboard.draw(TURN[player_index], 4)
-    hands[(player_index + 1) % 2] = gameboard.draw(TURN[(player_index + 1) % 2], 4)
-
-    interface.update_board(gameboard)
-
-    while not gameboard.get_winner():
-        player = TURN[player_index % 2]
-        player_hand = hands[player_index % 2]
-
-        # TODO: names
-        interface.show_info(player, "Turno jugador")
-
-        gameboard.iniciar_turno()
-        interface.update_board(gameboard)
-
-
-        # Draw (firs turn skip)
-        drew_card = gameboard.draw(player)[0]
-        player_hand.append(drew_card)
-
-        interface.show_info(str(drew_card), "Carta robada: ")
-        show_hand(interface, player, player_hand)
-
-        # Clocking
-        clocking_phase(gameboard, interface, player, player_hand)
-        interface.update_board(gameboard)
-        show_hand(interface, player, player_hand)
-
-        # Play cards
-        main_phase(gameboard, interface, "Main Phase 1", player, player_hand)
-        interface.update_board(gameboard)
-
-        # Battle phase
-        fase_de_batalla(gameboard, interface, player)
-        interface.update_board(gameboard)
-
-        show_hand(interface, player, player_hand)
-        # Play cards
-        main_phase(gameboard, interface, "Main Phase 2", player, player_hand)
-        interface.update_board(gameboard)
-
-        # Turn end
-        player_index += 1
-        interface.show_info(player, "Fin turno jugador")
-
-        gameboard.terminar_turno()
-
-
-    interface.show_info("Gano el jugador " + gameboard.get_winner(), "Fin del juego")
+    # Game loop
+    while not tablero.obtener_ganador():
+        jugador = TURNO[indice_jugador % 2]
+        mano_jugador = manos[indice_jugador % 2]
+        # Comienzo del turno
+        interfaz.mostrar_informacion("Comienza el turno del jugador " + str(jugador), "Turno jugador")
+        tablero.iniciar_turno()
+        interfaz.actualizar_tablero(tablero)
+        # Fase de robar (el primer turno se saltea esta fase)
+        drew_card = tablero.robar_cartas(jugador)[0]
+        mano_jugador.append(drew_card)
+        interfaz.mostrar_informacion("Carta robada:\n" + str(drew_card), "Fase de robar")
+        mostrar_mano(interfaz, jugador, mano_jugador)
+        # Fase de clock
+        fase_clock(tablero, interfaz, jugador, mano_jugador)
+        interfaz.actualizar_tablero(tablero)
+        mostrar_mano(interfaz, jugador, mano_jugador)
+        # Primer fase principal
+        fase_principal(tablero, interfaz, "Primer fase principal", jugador, mano_jugador)
+        interfaz.actualizar_tablero(tablero)
+        # Fase de combate
+        fase_combate(tablero, interfaz, jugador)
+        interfaz.actualizar_tablero(tablero)
+        mostrar_mano(interfaz, jugador, mano_jugador)
+        # Segunda fase principal
+        fase_principal(tablero, interfaz, "Segunda fase principal", jugador, mano_jugador)
+        interfaz.actualizar_tablero(tablero)
+        # Fin del turno
+        indice_jugador += 1
+        interfaz.mostrar_informacion("Finaliza el turno del jugador " + str(jugador), "Fin turno jugador")
+        tablero.terminar_turno()
+    # Final del juego
+    interfaz.mostrar_informacion("Gano el jugador " + tablero.obtener_ganador(), "Fin del juego")
 
 
 main()

@@ -1,170 +1,175 @@
-import board
+class Carta(object):
+    """ Clase que define atributos y metodos basicos de las cartas. Se usa como base para los distintos tipos
+        de carta. """
 
-__author__ = 'hige'
-
-
-class Ability(object):
-    def __init__(self):
-        """ """
-
-    def apply_on_card(self, card):
-        pass
-
-    def apply_on_board(self, gameboard, side):
-        pass
-
-    def revert_on_card(self, card):
-        pass
-
-    def revert_on_board(self, gameboard, side):
-        pass
-
-    def _get_base_text(self):
-        return "ABILITY:\n"
-
-    def get_text(self):
-        pass
-
-
-class PowerModifyAbility(Ability):
-    def __init__(self, power_modify):
-        self.modify = power_modify
-
-    def apply_on_card(self, card):
-        card.power += self.modify
-
-    def apply_on_board(self, gameboard, side):
-        if side == board.WEISS_SIDE:
-            lado_afectado = board.SCHWARZ_SIDE
-        elif side == board.SCHWARZ_SIDE:
-            lado_afectado = board.WEISS_SIDE
-
-        cartas = gameboard.get_front_stage_cards(lado_afectado)
-        for carta in cartas:
-            if not carta:
-                continue
-            self.apply_on_card(carta)
-
-    def get_text(self):
-        text = self._get_base_text()
-        if (self.modify > 0):
-            text += "Increments "
-        else:
-            text += "Reduces "
-
-        text += "enemy character power points in " + str(abs(self.modify))
-        return text
-
-
-class TemporalModifyAbility(PowerModifyAbility):
-    def revert_on_card(self, card):
-        card.power -= self.modify
-
-    def revert_on_board(self, gameboard, side):
-        if side == board.WEISS_SIDE:
-            lado_afectado = board.SCHWARZ_SIDE
-        elif side == board.SCHWARZ_SIDE:
-            lado_afectado = board.WEISS_SIDE
-
-        cartas = gameboard.get_front_stage_cards(lado_afectado)
-        for carta in cartas:
-            if not carta:
-                continue
-            self.revert_on_card(carta)
-
-    def get_text(self):
-        return super(self.__class__, self).get_text() + " during this turn"
-
-
-class Card(object):
-    """ Simulates a card  """
-
-    def __init__(self, name, color, trigger_icon, ability, flavor_text):
-        self.name = name
+    def __init__(self, nombre, color, efecto_extra, habilidad, texto_decorativo):
+        """
+        :param nombre: Nombre de la carta. Debe ser un string.
+        :param color: Color de la carta. Debe ser un string que representa el color.
+        :param efecto_extra: Puntos de efecto extra de la carta. Debe ser un numero entero entre 0 y 2, inclusive.
+        :param habilidad: Habilidad de la carta. La misma debe ser una instancia de una clase que herede de Habilidad.
+        :param texto_decorativo:Texto adicional de la carta. Debe ser un string.
+        """
+        self.nombre = nombre
         self.color = color
-        self.trigger_icon = trigger_icon
-        self.ability = ability
-        self.flavor_text = flavor_text
+        self.efecto_extra = efecto_extra
+        self.habilidad = habilidad
+        self.texto_decorativo = texto_decorativo
 
-    def get_color(self):
+    def obtener_color(self):
+        """
+        Devuelve el color de la carta
+        :return: String que representa el color
+        """
         return self.color
 
-    def get_trigger_icon(self):
-        return self.trigger_icon
+    def obetener_puntos_efecto_extra(self):
+        """
+        Devuelve los puntos de efecto extra de la carta
+        :return: Numero entero entre 0 y 2 inclusive
+        """
+        return self.efecto_extra
 
-    def get_name(self):
-        return self.name
+    def obtener_nombre(self):
+        """
+        Devuelve el nombre de la carta
+        :return: String con el nombre
+        """
+        return self.nombre
 
-    def get_flavor_text(self):
-        return self.flavor_text
+    def obtener_texto_decorativo(self):
+        """
+        Devuelve el texto adicional de la carta
+        :return: String con el texto adicional
+        """
+        return self.texto_decorativo
 
-    def get_ability(self):
-        return self.ability
+    def obtener_habilidad(self):
+        """
+        Devuelve la referencia de la habilidad que posee la carta
+        :return: Una referencia a un objeto de una clase que herede de Habilidad
+        """
+        return self.habilidad
 
 
-class CharacterCard(Card):
-    """Simulates a character card"""
+class CartaPersonaje(Carta):
+    """ Clase que representa a las cartas de tipo Personaje. """
 
-    def __init__(self, name, color, trigger_icon, ability, flavor_text, level, cost, power, soul_points, traits):
-        """ Creates a card with the info  """
-        super(self.__class__, self).__init__(name, color, trigger_icon, ability, flavor_text)
-        self.level = level
-        self.cost = cost
-        self.power = power
-        self.soul_points = soul_points
-        self.traits = traits
+    def __init__(self, nombre, color, efecto_extra, habilidad, texto_decorativo, nivel, costo, poder, puntos_alma, subtipos):
+        """
+        :param nombre: Nombre de la carta. Debe ser un string.
+        :param color: Color de la carta. Debe ser un string que representa el color.
+        :param efecto_extra: Puntos de efecto extra de la carta. Debe ser un numero entero entre 0 y 2, inclusive.
+        :param habilidad: Habilidad de la carta. La misma debe ser una instancia de una clase que herede de Habilidad.
+        :param texto_decorativo:Texto adicional de la carta. Debe ser un string.
+        :param nivel: Nivel de la carta. Debe ser un numero entero igual o mayor a 0.
+        :param costo: Costo para jugar la carta. Debe ser un numero entero igual o mayor a 0.
+        :param poder: Poder de la carta. Debe ser un numero entero igual o mayor a 0.
+        :param puntos_alma: Puntos de alma de la carta. Debe ser un numero entero, y valer 1 o 2.
+        :param subtipos: Subtipos de la carta de personaje. Debe ser una tupla que contenga 2 string.
+        """
+        super(self.__class__, self).__init__(nombre, color, efecto_extra, habilidad, texto_decorativo)
+        self.nivel = nivel
+        self.costo = costo
+        self.poder = poder
+        self.puntos_alma = puntos_alma
+        self.subtipos = subtipos
 
-    def get_level(self):
-        return self.level
+    def obtener_nivel(self):
+        """
+        Devuelve el nivel de la carta
+        :return: Numero entero igual o mayor a 0
+        """
+        return self.nivel
 
-    def get_cost(self):
-        return self.cost
+    def obtener_costo(self):
+        """
+        Devuelve el costo de la carta
+        :return: Numero entero igual o mayor a 0
+        """
+        return self.costo
 
-    def get_power(self):
-        return self.power
+    def obtener_poder(self):
+        """
+        Devuelve la fuerza de la carta
+        :return: Numero entero igual o mayor a 0
+        """
+        return self.poder
 
-    def get_soul_points(self):
-        return self.soul_points
+    def obtener_puntos_alma(self):
+        """
+        Devuelve los puntos de alma de la carta
+        :return: Numero entero mayor a 0
+        """
+        return self.puntos_alma
 
-    def get_traits(self):
-        return self.traits
+    def obtener_subtipos(self):
+        """
+        Devuelve los subtipos de la carta
+        :return: Tupla que contiene 2 string
+        """
+        return self.subtipos
+
+    def establecer_poder(self, poder):
+        """
+        Establece el poder de la carta al valor pasado por parametro. El poder de una carta nunca puede ser menor que 0.
+        :param poder: Numero entero cuyo valor sera establecido como poder de la carta.
+        :return: No tiene valor de retorno.
+        """
+        self.poder = round(poder)
+        if self.poder < 0:
+            self.poder = 0
 
     def __str__(self):
-        return self.name + " (" + str(self.level) + "," + str(self.cost) + " " + self.color + ")"
+        return self.nombre + " (" + str(self.nivel) + "," + str(self.costo) + " " + self.color + ")"
 
     def __repr__(self):
-        return self.name + " (" + str(self.level) + "," + str(self.cost) + " " + self.color + ")"
+        return self.nombre + " (" + str(self.nivel) + "," + str(self.costo) + " " + self.color + ")"
 
 
-class EventCard(Card):
-    """Simulates a character card"""
+class CartaEvento(Carta):
+    """ Clase que representa a las cartas de tipo Evento. """
 
-    def __init__(self, name, color, trigger_icon, ability, flavor_text, level, cost):
-        """ Creates a card with the info  """
-        super(self.__class__, self).__init__(name, color, trigger_icon, ability, flavor_text)
-        self.level = level
-        self.cost = cost
+    def __init__(self, nombre, color, efecto_extra, habilidad, texto_decorativo, nivel, costo):
+        """
+        :param nombre: Nombre de la carta. Debe ser un string.
+        :param color: Color de la carta. Debe ser un string que representa el color.
+        :param efecto_extra: Puntos de efecto extra de la carta. Debe ser un numero entero entre 0 y 2, inclusive.
+        :param habilidad: Habilidad de la carta. La misma debe ser una instancia de una clase que herede de Habilidad.
+        :param texto_decorativo:Texto adicional de la carta. Debe ser un string.
+        :param nivel: Nivel de la carta. Debe ser un numero entero igual o mayor a 0.
+        :param costo: Costo para jugar la carta. Debe ser un numero entero igual o mayor a 0.
+        """
+        super(self.__class__, self).__init__(nombre, color, efecto_extra, habilidad, texto_decorativo)
+        self.nivel = nivel
+        self.costo = costo
 
-    def get_level(self):
-        return self.level
+    def obtener_nivel(self):
+        """
+        Devuelve el nivel de la carta
+        :return: Numero entero igual o mayor a 0
+        """
+        return self.nivel
 
-    def get_cost(self):
-        return self.cost
+    def obtener_costo(self):
+        """
+        Devuelve el costo de la carta
+        :return: Numero entero igual o mayor a 0
+        """
+        return self.costo
 
     def __str__(self):
-        return self.name + " (" + str(self.level) + "," + str(self.cost) + " " + self.color + ")"
+        return self.nombre + " (" + str(self.nivel) + "," + str(self.costo) + " " + self.color + ")"
 
     def __repr__(self):
-        return self.name + " (" + str(self.level) + "," + str(self.cost) + " " + self.color + ")"
+        return self.nombre + " (" + str(self.nivel) + "," + str(self.costo) + " " + self.color + ")"
 
 
-class ClimaxCard(Card):
-    """ """
-    pass
-
+class CartaClimax(Carta):
+    """ Clase que representa a las cartas de tipo climax. """
 
     def __str__(self):
-        return self.name + " (" + self.color + " CLIMAX)"
+        return self.nombre + " (" + self.color + " CLIMAX)"
 
     def __repr__(self):
-        return self.name + " (" + self.color + " CLIMAX)"
+        return self.nombre + " (" + self.color + " CLIMAX)"

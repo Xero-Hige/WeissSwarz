@@ -1,389 +1,368 @@
 from time import sleep
-
-__author__ = 'hige'
-
-from cards import CharacterCard, ClimaxCard, EventCard
+from carta import CartaPersonaje, CartaClimax, CartaEvento
 import pygame
 
 pygame.init()
-CHARACTER_WIDTH = 448
-CHARACTER_HEIGHT = 626
+ANCHO_CARTA = 448
+ALTO_CARTA = 626
 
-CLIMAX_WIDTH = 626
-CLIMAX_HEIGHT = 448
+ANCHO_CLIMAX = 626
+ALTO_CLIMAX = 448
 
 
-def generate_character_image(card):
-    result = pygame.Surface((CHARACTER_WIDTH, CHARACTER_HEIGHT))
-    result.fill((255, 255, 255))
+def generar_imagen_personaje(carta):
+    """
+    Genera la imagen para una carta de personaje y la devuelve.
+    :param carta: Carta para la que se desea generar la imagen.
+    :return: Surface de pygame, que es la imagen generada para la carta.
+    """
+    resultado = pygame.Surface((ANCHO_CARTA, ALTO_CARTA))
+    resultado.fill((255, 255, 255))
 
-    image_file = card.get_name().replace(' ', '_') + ".png"
+    archivo_imagen = carta.obtener_nombre().replace(' ', '_') + ".png"
 
-    layout_file = card.get_color()[0] + str(card.get_soul_points()) + "s.png"
+    archivo_layout = carta.obtener_color()[0] + str(carta.obtener_puntos_alma()) + "s.png"
 
-    if card.get_level() != 0:
-        level_file = card.get_color()[0] + "l" + str(card.get_level()) + ".png"
+    if carta.obtener_nivel() != 0:
+        archivo_nivel = carta.obtener_color()[0] + "l" + str(carta.obtener_nivel()) + ".png"
     else:
-        level_file = "l0.png"
+        archivo_nivel = "l0.png"
 
-    cost_file = "c" + str(card.get_cost()) + ".png"
-    image = pygame.image.load("resources/card_images/" + image_file)
-    i_w, i_h = image.get_size()
+    archivo_costo = "c" + str(carta.obtener_costo()) + ".png"
+    imagen = pygame.image.load("resources/card_images/" + archivo_imagen)
+    i_w, i_h = imagen.get_size()
     if i_w > i_h:
-        i_w = CHARACTER_HEIGHT * i_w / i_h
-        i_h = CHARACTER_HEIGHT
-        if (i_w < CHARACTER_WIDTH):
-            i_h = CHARACTER_WIDTH * i_h / i_w
-            i_w = CHARACTER_WIDTH
+        i_w = ALTO_CARTA * i_w / i_h
+        i_h = ALTO_CARTA
+        if i_w < ANCHO_CARTA:
+            i_h = ANCHO_CARTA * i_h / i_w
+            i_w = ANCHO_CARTA
 
     else:
-        i_h = CHARACTER_WIDTH * i_h / i_w
-        i_w = CHARACTER_WIDTH
-        if (i_h < CHARACTER_HEIGHT):
-            i_w = CHARACTER_HEIGHT * i_w / i_h
-            i_h = CHARACTER_HEIGHT
+        i_h = ANCHO_CARTA * i_h / i_w
+        i_w = ANCHO_CARTA
+        if i_h < ALTO_CARTA:
+            i_w = ALTO_CARTA * i_w / i_h
+            i_h = ALTO_CARTA
 
-    image = pygame.transform.scale(image, (i_w, i_h))
-    horizontal_adjust = (CHARACTER_WIDTH - i_w) / 2
-    vertical_adjust = (CHARACTER_HEIGHT - i_h) / 2
+    imagen = pygame.transform.scale(imagen, (i_w, i_h))
+    ajuste_horizontal = (ANCHO_CARTA - i_w) / 2
+    ajuste_vertical = (ALTO_CARTA - i_h) / 2
 
-    result.blit(image, (horizontal_adjust, vertical_adjust))
+    resultado.blit(imagen, (ajuste_horizontal, ajuste_vertical))
 
-    image = pygame.image.load("resources/card_layouts/character/" + layout_file)
-    result.blit(image, (0, 0))
+    imagen = pygame.image.load("resources/card_layouts/character/" + archivo_layout)
+    resultado.blit(imagen, (0, 0))
 
-    image = pygame.image.load("resources/card_layouts/level/" + level_file)
-    result.blit(image, (0, 0))
+    imagen = pygame.image.load("resources/card_layouts/level/" + archivo_nivel)
+    resultado.blit(imagen, (0, 0))
 
-    image = pygame.image.load("resources/card_layouts/cost/" + cost_file)
-    result.blit(image, (0, 60))
+    imagen = pygame.image.load("resources/card_layouts/cost/" + archivo_costo)
+    resultado.blit(imagen, (0, 60))
 
-    trigger_icon = card.get_trigger_icon()
-    if trigger_icon == 0:
-        image = pygame.image.load("resources/card_layouts/triggers/none.png")
-        result.blit(image, (CHARACTER_WIDTH - image.get_size()[0], 0))
+    efecto_extra = carta.obetener_puntos_efecto_extra()
+    if efecto_extra == 0:
+        imagen = pygame.image.load("resources/card_layouts/triggers/none.png")
+        resultado.blit(imagen, (ANCHO_CARTA - imagen.get_size()[0], 0))
     else:
-        image = pygame.image.load("resources/card_layouts/triggers/soul.png")
-        result.blit(image, (CHARACTER_WIDTH - image.get_size()[0], 0))
+        imagen = pygame.image.load("resources/card_layouts/triggers/soul.png")
+        resultado.blit(imagen, (ANCHO_CARTA - imagen.get_size()[0], 0))
 
-        if trigger_icon == 2:
-            result.blit(image, (CHARACTER_WIDTH - image.get_size()[0] * 2, 0))
+        if efecto_extra == 2:
+            resultado.blit(imagen, (ANCHO_CARTA - imagen.get_size()[0] * 2, 0))
 
-    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 27)
+    fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 27)
 
-    label = myfont.render(str(card.get_name()), 1, (255, 255, 255))
+    label = fuente.render(str(carta.obtener_nombre()), 1, (255, 255, 255))
+    centro_horizontal = 115 + ((435 - 155) - label.get_size()[0]) / 2
+    resultado.blit(label, (centro_horizontal, 554))  # Min 155 - Max 350 || #Min 555 - Max 575
+
+    label = fuente.render(str(carta.obtener_poder()), 1, (255, 255, 255))
+    centro_horizontal = 32 + ((116 - 32) - label.get_size()[0]) / 2
+    resultado.blit(label, (centro_horizontal, 567))  # Min 32 - Max 116
+
+    fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 11)
+    subtipo_x = 212
+    for trait in carta.obtener_subtipos():
+        label = fuente.render(trait, 1, (0, 0, 0))
+        centro_horizontal = subtipo_x + (90 - label.get_size()[0]) / 2
+        resultado.blit(label, (centro_horizontal, 587))
+        subtipo_x += 100
+
+    fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
+
+    lineas = []
+    for linea in carta.obtener_texto_decorativo().split('\n'):
+        lineas.append(fuente.render(linea, 1, (0, 0, 0)))
+
+    alto_linea = lineas[0].get_size()[1]
+
+    caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA / 8, alto_linea * len(lineas)), pygame.SRCALPHA)
+    caja_de_texto.fill((255, 255, 255, 150))
+    posicion = 550
+    resultado.blit(caja_de_texto, (ANCHO_CARTA / 16, posicion - caja_de_texto.get_size()[1]))
+
+    for label in lineas[::-1]:
+        posicion -= alto_linea
+        resultado.blit(label, (ANCHO_CARTA / 16, posicion))
+
+    if (carta.obtener_habilidad()):
+        lineas = []
+        for linea in carta.obtener_habilidad().obtener_texto().split('\n'):
+            lineas.append(fuente.render(linea, 1, (0, 0, 0)))
+
+        alto_linea = lineas[0].get_size()[1]
+
+        caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA / 8, alto_linea * len(lineas)), pygame.SRCALPHA)
+        caja_de_texto.fill((255, 255, 255, 150))
+        posicion -= 5
+        resultado.blit(caja_de_texto, (ANCHO_CARTA / 16, posicion - caja_de_texto.get_size()[1]))
+
+        for label in lineas[::-1]:
+            posicion -= alto_linea
+            resultado.blit(label, (ANCHO_CARTA / 16, posicion))
+
+    return resultado
+
+
+def generar_imagen_evento(carta):
+    """
+    Genera la imagen para una carta de evento y la devuelve.
+    :param carta: Carta para la que se desea generar la imagen.
+    :return: Surface de pygame, que es la imagen generada para la carta.
+    """
+    resultado = pygame.Surface((ANCHO_CARTA, ALTO_CARTA))
+    resultado.fill((255, 255, 255))
+
+    archivo_imagen = carta.obtener_nombre().replace(' ', '_') + ".png"
+
+    archivo_layout = carta.obtener_color() + ".png"
+
+    if carta.obtener_nivel() != 0:
+        archivo_nivel = carta.obtener_color()[0] + "l" + str(carta.obtener_nivel()) + ".png"
+    else:
+        archivo_nivel = "l0.png"
+
+    archivo_costo = "c" + str(carta.obtener_costo()) + ".png"
+    imagen = pygame.image.load("resources/card_images/" + archivo_imagen)
+    i_w, i_h = imagen.get_size()
+    if i_w > i_h:
+        i_w = ALTO_CARTA * i_w / i_h
+        i_h = ALTO_CARTA
+        if i_w < ANCHO_CARTA:
+            i_h = ANCHO_CARTA * i_h / i_w
+            i_w = ANCHO_CARTA
+
+    else:
+        i_h = ANCHO_CARTA * i_h / i_w
+        i_w = ANCHO_CARTA
+        if i_h < ALTO_CARTA:
+            i_w = ALTO_CARTA * i_w / i_h
+            i_h = ALTO_CARTA
+
+    imagen = pygame.transform.scale(imagen, (i_w, i_h))
+    ajuste_horizontal = (ANCHO_CARTA - i_w) / 2
+    ajuste_vertical = (ALTO_CARTA - i_h) / 2
+
+    resultado.blit(imagen, (ajuste_horizontal, ajuste_vertical))
+
+    imagen = pygame.image.load("resources/card_layouts/event/" + archivo_layout)
+    resultado.blit(imagen, (0, 0))
+
+    imagen = pygame.image.load("resources/card_layouts/level/" + archivo_nivel)
+    resultado.blit(imagen, (0, 0))
+
+    imagen = pygame.image.load("resources/card_layouts/cost/" + archivo_costo)
+    resultado.blit(imagen, (0, 60))
+
+    efecto_extra = carta.obetener_puntos_efecto_extra()
+    if efecto_extra == 0:
+        imagen = pygame.image.load("resources/card_layouts/triggers/none.png")
+        resultado.blit(imagen, (ANCHO_CARTA - imagen.get_size()[0], 0))
+    else:
+        imagen = pygame.image.load("resources/card_layouts/triggers/soul.png")
+        resultado.blit(imagen, (ANCHO_CARTA - imagen.get_size()[0], 0))
+
+        if efecto_extra == 2:
+            resultado.blit(imagen, (ANCHO_CARTA - imagen.get_size()[0] * 2, 0))
+
+    fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 25)
+
+    label = fuente.render(str(carta.obtener_nombre()), 1, (255, 255, 255))
     center_horizontal = 115 + ((435 - 155) - label.get_size()[0]) / 2
-    result.blit(label, (center_horizontal, 554))  # Min 155 - Max 350 || #Min 555 - Max 575
+    resultado.blit(label, (center_horizontal, 570))  # Min 155 - Max 350 || #Min 555 - Max 575
 
-    label = myfont.render(str(card.get_power()), 1, (255, 255, 255))
-    center_horizontal = 32 + ((116 - 32) - label.get_size()[0]) / 2
-    result.blit(label, (center_horizontal, 567))  # Min 32 - Max 116
+    fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
 
-    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 11)
-    trait_x = 212
-    for trait in card.get_traits():
-        label = myfont.render(trait, 1, (0, 0, 0))
-        center_horizontal = trait_x + (90 - label.get_size()[0]) / 2
-        result.blit(label, (center_horizontal, 587))
-        trait_x += 100
+    lineas = []
+    for line in carta.obtener_texto_decorativo().split('\n'):
+        lineas.append(fuente.render(line, 1, (0, 0, 0)))
 
-    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
+    alto_linea = lineas[0].get_size()[1]
 
-    labels = []
-    for line in card.get_flavor_text().split('\n'):
-        labels.append(myfont.render(line, 1, (0, 0, 0)))
+    caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA / 8, alto_linea * len(lineas)), pygame.SRCALPHA)
+    caja_de_texto.fill((255, 255, 255, 150))
+    posicion = 565
+    resultado.blit(caja_de_texto, (ANCHO_CARTA / 16, posicion - caja_de_texto.get_size()[1]))
 
-    line_height = labels[0].get_size()[1]
+    for label in lineas[::-1]:
+        posicion -= alto_linea
+        resultado.blit(label, (ANCHO_CARTA / 16, posicion))
 
-    text_box = pygame.Surface((CHARACTER_WIDTH - CHARACTER_WIDTH / 8, line_height * len(labels)), pygame.SRCALPHA)
-    text_box.fill((255, 255, 255, 150))
-    position = 550
-    result.blit(text_box, (CHARACTER_WIDTH / 16, position - text_box.get_size()[1]))
+    if (carta.obtener_habilidad()):
+        lineas = []
+        for line in carta.obtener_habilidad().obtener_texto().split('\n'):
+            lineas.append(fuente.render(line, 1, (0, 0, 0)))
 
-    for label in labels[::-1]:
-        position -= line_height
-        result.blit(label, (CHARACTER_WIDTH / 16, position))
+        alto_linea = lineas[0].get_size()[1]
 
-    if (card.get_ability()):
-        labels = []
-        for line in card.get_ability().get_text().split('\n'):
-            labels.append(myfont.render(line, 1, (0, 0, 0)))
+        caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA / 8, alto_linea * len(lineas)), pygame.SRCALPHA)
+        caja_de_texto.fill((255, 255, 255, 150))
+        posicion -= 5
+        resultado.blit(caja_de_texto, (ANCHO_CARTA / 16, posicion - caja_de_texto.get_size()[1]))
 
-        line_height = labels[0].get_size()[1]
+        for label in lineas[::-1]:
+            posicion -= alto_linea
+            resultado.blit(label, (ANCHO_CARTA / 16, posicion))
 
-        text_box = pygame.Surface((CHARACTER_WIDTH - CHARACTER_WIDTH / 8, line_height * len(labels)), pygame.SRCALPHA)
-        text_box.fill((255, 255, 255, 150))
-        position -= 5
-        result.blit(text_box, (CHARACTER_WIDTH / 16, position - text_box.get_size()[1]))
-
-        for label in labels[::-1]:
-            position -= line_height
-            result.blit(label, (CHARACTER_WIDTH / 16, position))
-
-    return result
+    return resultado
 
 
-def generate_event_image(card):
-    result = pygame.Surface((CHARACTER_WIDTH, CHARACTER_HEIGHT))
-    result.fill((255, 255, 255))
+def generar_imagen_climax(carta):
+    """
+    Genera la imagen para una carta de climax y la devuelve.
+    :param carta: Carta para la que se desea generar la imagen.
+    :return: Surface de pygame, que es la imagen generada para la carta.
+    """
+    resultado = pygame.Surface((ANCHO_CLIMAX, ALTO_CLIMAX))
+    resultado.fill((255, 255, 255))
 
-    image_file = card.get_name().replace(' ', '_') + ".png"
+    archivo_imagen = carta.obtener_nombre().replace(' ', '_') + ".png"
 
-    layout_file = card.get_color() + ".png"
+    archivo_layout = carta.obtener_color() + ".png"
 
-    if card.get_level() != 0:
-        level_file = card.get_color()[0] + "l" + str(card.get_level()) + ".png"
-    else:
-        level_file = "l0.png"
-
-    cost_file = "c" + str(card.get_cost()) + ".png"
-    image = pygame.image.load("resources/card_images/" + image_file)
-    i_w, i_h = image.get_size()
+    imagen = pygame.image.load("resources/card_images/" + archivo_imagen)
+    i_w, i_h = imagen.get_size()
     if i_w > i_h:
-        i_w = CHARACTER_HEIGHT * i_w / i_h
-        i_h = CHARACTER_HEIGHT
-        if (i_w < CHARACTER_WIDTH):
-            i_h = CHARACTER_WIDTH * i_h / i_w
-            i_w = CHARACTER_WIDTH
+        i_w = ALTO_CLIMAX * i_w / i_h
+        i_h = ALTO_CLIMAX
+        if i_w < ANCHO_CLIMAX:
+            i_h = ANCHO_CLIMAX * i_h / i_w
+            i_w = ANCHO_CLIMAX
 
     else:
-        i_h = CHARACTER_WIDTH * i_h / i_w
-        i_w = CHARACTER_WIDTH
-        if (i_h < CHARACTER_HEIGHT):
-            i_w = CHARACTER_HEIGHT * i_w / i_h
-            i_h = CHARACTER_HEIGHT
+        i_h = ANCHO_CLIMAX * i_h / i_w
+        i_w = ANCHO_CLIMAX
+        if i_h < ALTO_CLIMAX:
+            i_w = ALTO_CLIMAX * i_w / i_h
+            i_h = ALTO_CLIMAX
 
-    image = pygame.transform.scale(image, (i_w, i_h))
-    horizontal_adjust = (CHARACTER_WIDTH - i_w) / 2
-    vertical_adjust = (CHARACTER_HEIGHT - i_h) / 2
+    imagen = pygame.transform.scale(imagen, (i_w, i_h))
+    ajuste_horizontal = (ANCHO_CLIMAX - i_w) / 2
+    ajuste_vertical = (ALTO_CLIMAX - i_h) / 2
 
-    result.blit(image, (horizontal_adjust, vertical_adjust))
+    resultado.blit(imagen, (ajuste_horizontal, ajuste_vertical))
 
-    image = pygame.image.load("resources/card_layouts/event/" + layout_file)
-    result.blit(image, (0, 0))
+    imagen = pygame.image.load("resources/card_layouts/climax/" + archivo_layout)
+    resultado.blit(imagen, (0, 0))
 
-    image = pygame.image.load("resources/card_layouts/level/" + level_file)
-    result.blit(image, (0, 0))
-
-    image = pygame.image.load("resources/card_layouts/cost/" + cost_file)
-    result.blit(image, (0, 60))
-
-    trigger_icon = card.get_trigger_icon()
-    if trigger_icon == 0:
-        image = pygame.image.load("resources/card_layouts/triggers/none.png")
-        result.blit(image, (CHARACTER_WIDTH - image.get_size()[0], 0))
+    efecto_extra = carta.obetener_puntos_efecto_extra()
+    if efecto_extra == 0:
+        imagen = pygame.image.load("resources/card_layouts/triggers/none.png")
+        imagen = pygame.transform.rotate(imagen, 90)
+        resultado.blit(imagen, (0, 0))
     else:
-        image = pygame.image.load("resources/card_layouts/triggers/soul.png")
-        result.blit(image, (CHARACTER_WIDTH - image.get_size()[0], 0))
+        imagen = pygame.image.load("resources/card_layouts/triggers/soul.png")
+        imagen = pygame.transform.rotate(imagen, 90)
+        resultado.blit(imagen, (0, 0))
 
-        if trigger_icon == 2:
-            result.blit(image, (CHARACTER_WIDTH - image.get_size()[0] * 2, 0))
+        if efecto_extra == 2:
+            resultado.blit(imagen, (0, imagen.get_size()[1]))
 
-    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 25)
+    fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 22)
 
-    label = myfont.render(str(card.get_name()), 1, (255, 255, 255))
-    center_horizontal = 115 + ((435 - 155) - label.get_size()[0]) / 2
-    result.blit(label, (center_horizontal, 570))  # Min 155 - Max 350 || #Min 555 - Max 575
+    label = fuente.render(str(carta.obtener_nombre()), 1, (255, 255, 255))
+    centro_horizontal = 380 + ((580 - 380) - label.get_size()[0]) / 2
+    resultado.blit(label, (centro_horizontal, 394))
 
-    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
+    fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
 
-    labels = []
-    for line in card.get_flavor_text().split('\n'):
-        labels.append(myfont.render(line, 1, (0, 0, 0)))
+    lineas = []
+    for line in carta.obtener_texto_decorativo().split('\n'):
+        lineas.append(fuente.render(line, 1, (0, 0, 0)))
 
-    line_height = labels[0].get_size()[1]
+    alto_linea = lineas[0].get_size()[1]
 
-    text_box = pygame.Surface((CHARACTER_WIDTH - CHARACTER_WIDTH / 8, line_height * len(labels)), pygame.SRCALPHA)
-    text_box.fill((255, 255, 255, 150))
-    position = 565
-    result.blit(text_box, (CHARACTER_WIDTH / 16, position - text_box.get_size()[1]))
+    caja_de_texto = pygame.Surface((339, alto_linea * len(lineas)), pygame.SRCALPHA)
+    caja_de_texto.fill((255, 255, 255, 150))
+    posicion = 390
+    resultado.blit(caja_de_texto, (ANCHO_CLIMAX - 372, posicion - caja_de_texto.get_size()[1]))
 
-    for label in labels[::-1]:
-        position -= line_height
-        result.blit(label, (CHARACTER_WIDTH / 16, position))
+    for label in lineas[::-1]:
+        posicion -= alto_linea
+        resultado.blit(label, (ANCHO_CLIMAX - 372, posicion))
 
-    if (card.get_ability()):
-        labels = []
-        for line in card.get_ability().get_text().split('\n'):
-            labels.append(myfont.render(line, 1, (0, 0, 0)))
+    fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 12)
 
-        line_height = labels[0].get_size()[1]
+    lineas = []
 
-        text_box = pygame.Surface((CHARACTER_WIDTH - CHARACTER_WIDTH / 8, line_height * len(labels)), pygame.SRCALPHA)
-        text_box.fill((255, 255, 255, 150))
-        position -= 5
-        result.blit(text_box, (CHARACTER_WIDTH / 16, position - text_box.get_size()[1]))
+    alto_linea = 0
+    if carta.obtener_habilidad():
+        for line in carta.obtener_habilidad().obtener_texto().split('\n'):
+            lineas.append(fuente.render(line, 1, (0, 0, 0)))
 
-        for label in labels[::-1]:
-            position -= line_height
-            result.blit(label, (CHARACTER_WIDTH / 16, position))
+        alto_linea = lineas[0].get_size()[1]
 
-    return result
+    caja_de_texto = pygame.Surface((225, alto_linea * len(lineas)), pygame.SRCALPHA)
+    caja_de_texto.fill((255, 255, 255, 150))
+    posicion = 445
+    resultado.blit(caja_de_texto, (8, posicion - caja_de_texto.get_size()[1]))
+
+    for label in lineas[::-1]:
+        posicion -= alto_linea
+        resultado.blit(label, (10, posicion))
+
+    return pygame.transform.rotate(resultado, -90)
 
 
-def generate_climax_image(card):
-    result = pygame.Surface((CLIMAX_WIDTH, CLIMAX_HEIGHT))
-    result.fill((255, 255, 255))
-
-    image_file = card.get_name().replace(' ', '_') + ".png"
-
-    layout_file = card.get_color() + ".png"
-
-    image = pygame.image.load("resources/card_images/" + image_file)
-    i_w, i_h = image.get_size()
-    if i_w > i_h:
-        i_w = CLIMAX_HEIGHT * i_w / i_h
-        i_h = CLIMAX_HEIGHT
-        if (i_w < CLIMAX_WIDTH):
-            i_h = CLIMAX_WIDTH * i_h / i_w
-            i_w = CLIMAX_WIDTH
-
+def generar_imagen_carta(carta):
+    """
+    Genera la imagen para la carta pasada por parametro y la devuelve.
+    :param carta: Carta para la que se desea generar la imagen.
+    :return: Surface de pygame, que es la imagen generada para la carta.
+    """
+    if isinstance(carta, CartaClimax):
+        return generar_imagen_climax(carta)
+    elif isinstance(carta, CartaPersonaje):
+        return generar_imagen_personaje(carta)
+    elif isinstance(carta, CartaEvento):
+        return generar_imagen_evento(carta)
     else:
-        i_h = CLIMAX_WIDTH * i_h / i_w
-        i_w = CLIMAX_WIDTH
-        if (i_h < CLIMAX_HEIGHT):
-            i_w = CLIMAX_HEIGHT * i_w / i_h
-            i_h = CLIMAX_HEIGHT
-
-    image = pygame.transform.scale(image, (i_w, i_h))
-    horizontal_adjust = (CLIMAX_WIDTH - i_w) / 2
-    vertical_adjust = (CLIMAX_HEIGHT - i_h) / 2
-
-    result.blit(image, (horizontal_adjust, vertical_adjust))
-
-    image = pygame.image.load("resources/card_layouts/climax/" + layout_file)
-    result.blit(image, (0, 0))
-
-    trigger_icon = card.get_trigger_icon()
-    if trigger_icon == 0:
-        image = pygame.image.load("resources/card_layouts/triggers/none.png")
-        image = pygame.transform.rotate(image, 90)
-        result.blit(image, (0, 0))
-    else:
-        image = pygame.image.load("resources/card_layouts/triggers/soul.png")
-        image = pygame.transform.rotate(image, 90)
-        result.blit(image, (0, 0))
-
-        if trigger_icon == 2:
-            result.blit(image, (0, image.get_size()[1]))
-
-    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 22)
-
-    label = myfont.render(str(card.get_name()), 1, (255, 255, 255))
-    center_horizontal = 380 + ((580 - 380) - label.get_size()[0]) / 2
-    result.blit(label, (center_horizontal, 394))
-
-    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
-
-    labels = []
-    for line in card.get_flavor_text().split('\n'):
-        labels.append(myfont.render(line, 1, (0, 0, 0)))
-
-    line_height = labels[0].get_size()[1]
-
-    text_box = pygame.Surface((339, line_height * len(labels)), pygame.SRCALPHA)
-    text_box.fill((255, 255, 255, 150))
-    position = 390
-    result.blit(text_box, (CLIMAX_WIDTH - 372, position - text_box.get_size()[1]))
-
-    for label in labels[::-1]:
-        position -= line_height
-        result.blit(label, (CLIMAX_WIDTH - 372, position))
-
-    myfont = pygame.font.Font("resources/agfarotissemiserif.ttf", 12)
-
-    labels = []
-    for line in card.get_ability().get_text().split('\n'):
-        labels.append(myfont.render(line, 1, (0, 0, 0)))
-
-    line_height = labels[0].get_size()[1]
-
-    text_box = pygame.Surface((225, line_height * len(labels)), pygame.SRCALPHA)
-    text_box.fill((255, 255, 255, 150))
-    position = 445
-    result.blit(text_box, (8, position - text_box.get_size()[1]))
-
-    for label in labels[::-1]:
-        position -= line_height
-        result.blit(label, (10, position))
-
-    return pygame.transform.rotate(result, -90)
+        raise TypeError, "No es una carta, no se generar una imagen"
 
 
-def generate_card_image(card):
-    if isinstance(card, ClimaxCard):
-        return generate_climax_image(card)
-
-    elif isinstance(card, CharacterCard):
-        return generate_character_image(card)
-
-    elif isinstance(card, EventCard):
-        return generate_event_image(card)
-
-    else:
-        raise TypeError, "Eso no es una carta, no se generar una imagen"
-
-
-def show_card(card, text="", showtime=2):
-    if isinstance(card, ClimaxCard):
-        screen = pygame.display.set_mode((CLIMAX_WIDTH, CLIMAX_HEIGHT))
-        card_image = generate_climax_image(card)
-
-    elif isinstance(card, CharacterCard):
-        screen = pygame.display.set_mode((CHARACTER_WIDTH, CHARACTER_HEIGHT))
-        card_image = generate_character_image(card)
-
-    elif isinstance(card, EventCard):
-        screen = pygame.display.set_mode((CHARACTER_WIDTH, CHARACTER_HEIGHT))
-        card_image = generate_event_image(card)
-
+def mostrar_carta(carta, texto="", tiempo=2):
+    """
+    Muestra la imagen correspondiente a la carta pasada por parametro, durante el tiempo dado. La imagen es generada
+    dinamicamente al llamar a la funcion.
+    :param carta: Carta para la que se quiere generar y mostrar la imagen.
+    :param texto: Texto que se mostrara en la ventana en la que se muestre la imagen de la carta.
+    :param tiempo: Tiempo que se mostrara la imagen.
+    :return: No tiene valor de retorno.
+    """
+    if isinstance(carta, CartaClimax):
+        pantalla = pygame.display.set_mode((ANCHO_CLIMAX, ALTO_CLIMAX))
+        imagen_carta = generar_imagen_climax(carta)
+    elif isinstance(carta, CartaPersonaje):
+        pantalla = pygame.display.set_mode((ANCHO_CARTA, ALTO_CARTA))
+        imagen_carta = generar_imagen_personaje(carta)
+    elif isinstance(carta, CartaEvento):
+        pantalla = pygame.display.set_mode((ANCHO_CARTA, ALTO_CARTA))
+        imagen_carta = generar_imagen_evento(carta)
     else:
         raise TypeError, "Eso no es una carta, no se puede mostrar"
 
-    screen.blit(card_image, (0, 0))
-    pygame.display.set_caption(text)
+    pantalla.blit(imagen_carta, (0, 0))
+    pygame.display.set_caption(texto)
     pygame.display.flip()
-    sleep(showtime)
-
-
-def main():
-    cards = []
-    cards.append(CharacterCard("Illya", "blue", 0, None, "\"Good night\"", 1, 1, 5500, 1, ("Mage", "Loli")))
-    cards.append(CharacterCard("Archer", "red", 1, None,
-                               "\"But it's all a fake. Such hypocrisy cannot save anything.\nNo, first of all, I did not know what I wanted to save!\"",
-                               2, 0, 8000, 1, ("Archer", "Heroic")))
-    cards.append(CharacterCard("Elegant Lily", "yellow", 2, None,
-                               "\"Even if he is not a Master, our contract will not go away.\nI have sworn to protect him and to be his sword.\"",
-                               2, 2, 11000, 2, ("Warrior", "Heroic")))
-    cards.append(
-        CharacterCard("Bride Saber", "green", 2, None, "\"Answer me:\n   Are you my Praetor?.\"", 3, 1, 15000, 2,
-                      ("Warrior", "Heroic")))
-    cards.append(CharacterCard("Shiro", "green", 1, None, "\"People die when they are killed\"", 0, 0, 1000, 1,
-                               ("Warrior", "Mage")))
-
-    screen = pygame.display.set_mode((CHARACTER_WIDTH, CHARACTER_HEIGHT))
-
-    for card in cards:
-        card_image = generate_character_image(card)
-        screen.blit(card_image, (0, 0))
-        pygame.display.flip()
-        sleep(2)
-
-    card = EventCard("Wounded charge", "blue", 0, None, "Believe it till the end, i won't go away\nAnd won't say never",
-                     1, 2)
-    card_image = generate_event_image(card)
-    screen.blit(card_image, (0, 0))
-    pygame.display.flip()
-    sleep(6)
-
-    pygame.display.set_mode((CLIMAX_WIDTH, CLIMAX_HEIGHT))
-
-    card_image = generate_climax_image(ClimaxCard("A fated encounter", "red", 1, None,
-                                                  "\"I'm not scared anymore even though it's dark.\n You're strong, Berserker.\n I'm safe if you're there like that.\""))
-    screen.blit(card_image, (0, 0))
-    pygame.display.flip()
-    sleep(2)
-
-
-if __name__ == "__main__":
-    main()
+    sleep(tiempo)
