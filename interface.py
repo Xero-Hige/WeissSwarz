@@ -86,7 +86,8 @@ class Interfaz_Ventana(object):
         c = self.__obtener_surface_carta(carta)
         from PIL import Image, ImageTk
 
-        imagen = Image.fromstring('RGBA', c.get_rect()[2:], pygame.image.tostring(c, "RGBA"))
+        print(c.get_rect())
+        imagen = Image.frombytes('RGBA', (c.get_rect()[2], c.get_rect()[3]), pygame.image.tostring(c, "RGBA"))
         foto = ImageTk.PhotoImage(imagen)
 
         self.label_imagen = Label(image=foto)

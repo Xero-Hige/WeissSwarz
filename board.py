@@ -231,7 +231,7 @@ class _CampoJugador(object):
         colores = {}
         for carta in self.area_clock:
             colores[carta.obtener_color()] = 0
-        return colores.keys()
+        return [x for x in colores]
 
     def obtener_colores_nivel(self):
         """
@@ -241,7 +241,7 @@ class _CampoJugador(object):
         colores = {}
         for carta in self.area_nivel:
             colores[carta.obtener_color()] = 0
-        return colores.keys()
+        return [x for x in colores]
 
     def obtener_colores_recursos(self):
         """
@@ -251,7 +251,7 @@ class _CampoJugador(object):
         colores = {}
         for carta in self.area_recursos:
             colores[carta.obtener_color()] = 0
-        return colores.keys()
+        return [x for x in colores]
 
     def puede_jugar_carta(self, carta):
         """
@@ -270,7 +270,7 @@ class _CampoJugador(object):
             return False
         # Se chequea si se pueden jugar cartas de ese color
         playable_colors = self.obtener_colores_clock()
-        playable_colors += self.obtener_colores_nivel()
+        playable_colors += self.obtener_colores_nivel()  # TODO: Optimize
         if carta.obtener_color() not in playable_colors:
             if carta.obtener_nivel() != 0:
                 return False

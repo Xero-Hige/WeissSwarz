@@ -34,22 +34,22 @@ def generar_imagen_personaje(carta):
     imagen = pygame.image.load("resources/card_images/" + archivo_imagen)
     i_w, i_h = imagen.get_size()
     if i_w > i_h:
-        i_w = ALTO_CARTA * i_w / i_h
+        i_w = ALTO_CARTA * i_w // i_h
         i_h = ALTO_CARTA
         if i_w < ANCHO_CARTA:
-            i_h = ANCHO_CARTA * i_h / i_w
+            i_h = ANCHO_CARTA * i_h // i_w
             i_w = ANCHO_CARTA
 
     else:
-        i_h = ANCHO_CARTA * i_h / i_w
+        i_h = ANCHO_CARTA * i_h // i_w
         i_w = ANCHO_CARTA
         if i_h < ALTO_CARTA:
-            i_w = ALTO_CARTA * i_w / i_h
+            i_w = ALTO_CARTA * i_w // i_h
             i_h = ALTO_CARTA
 
     imagen = pygame.transform.scale(imagen, (i_w, i_h))
-    ajuste_horizontal = (ANCHO_CARTA - i_w) / 2
-    ajuste_vertical = (ALTO_CARTA - i_h) / 2
+    ajuste_horizontal = (ANCHO_CARTA - i_w) // 2
+    ajuste_vertical = (ALTO_CARTA - i_h) // 2
 
     resultado.blit(imagen, (ajuste_horizontal, ajuste_vertical))
 
@@ -76,18 +76,18 @@ def generar_imagen_personaje(carta):
     fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 27)
 
     label = fuente.render(str(carta.obtener_nombre()), 1, (255, 255, 255))
-    centro_horizontal = 115 + ((435 - 155) - label.get_size()[0]) / 2
+    centro_horizontal = 115 + ((435 - 155) - label.get_size()[0]) // 2
     resultado.blit(label, (centro_horizontal, 554))  # Min 155 - Max 350 || #Min 555 - Max 575
 
     label = fuente.render(str(carta.obtener_poder()), 1, (255, 255, 255))
-    centro_horizontal = 32 + ((116 - 32) - label.get_size()[0]) / 2
+    centro_horizontal = 32 + ((116 - 32) - label.get_size()[0]) // 2
     resultado.blit(label, (centro_horizontal, 567))  # Min 32 - Max 116
 
     fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 11)
     subtipo_x = 212
     for trait in carta.obtener_subtipos():
         label = fuente.render(trait, 1, (0, 0, 0))
-        centro_horizontal = subtipo_x + (90 - label.get_size()[0]) / 2
+        centro_horizontal = subtipo_x + (90 - label.get_size()[0]) // 2
         resultado.blit(label, (centro_horizontal, 587))
         subtipo_x += 100
 
@@ -99,14 +99,14 @@ def generar_imagen_personaje(carta):
 
     alto_linea = lineas[0].get_size()[1]
 
-    caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA / 8, alto_linea * len(lineas)), pygame.SRCALPHA)
+    caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA // 8, alto_linea * len(lineas)), pygame.SRCALPHA)
     caja_de_texto.fill((255, 255, 255, 150))
     posicion = 550
-    resultado.blit(caja_de_texto, (ANCHO_CARTA / 16, posicion - caja_de_texto.get_size()[1]))
+    resultado.blit(caja_de_texto, (ANCHO_CARTA // 16, posicion - caja_de_texto.get_size()[1]))
 
     for label in lineas[::-1]:
         posicion -= alto_linea
-        resultado.blit(label, (ANCHO_CARTA / 16, posicion))
+        resultado.blit(label, (ANCHO_CARTA // 16, posicion))
 
     if (carta.obtener_habilidad()):
         lineas = []
@@ -115,14 +115,14 @@ def generar_imagen_personaje(carta):
 
         alto_linea = lineas[0].get_size()[1]
 
-        caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA / 8, alto_linea * len(lineas)), pygame.SRCALPHA)
+        caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA // 8, alto_linea * len(lineas)), pygame.SRCALPHA)
         caja_de_texto.fill((255, 255, 255, 150))
         posicion -= 5
-        resultado.blit(caja_de_texto, (ANCHO_CARTA / 16, posicion - caja_de_texto.get_size()[1]))
+        resultado.blit(caja_de_texto, (ANCHO_CARTA // 16, posicion - caja_de_texto.get_size()[1]))
 
         for label in lineas[::-1]:
             posicion -= alto_linea
-            resultado.blit(label, (ANCHO_CARTA / 16, posicion))
+            resultado.blit(label, (ANCHO_CARTA // 16, posicion))
 
     return resultado
 
@@ -149,22 +149,22 @@ def generar_imagen_evento(carta):
     imagen = pygame.image.load("resources/card_images/" + archivo_imagen)
     i_w, i_h = imagen.get_size()
     if i_w > i_h:
-        i_w = ALTO_CARTA * i_w / i_h
+        i_w = ALTO_CARTA * i_w // i_h
         i_h = ALTO_CARTA
         if i_w < ANCHO_CARTA:
-            i_h = ANCHO_CARTA * i_h / i_w
+            i_h = ANCHO_CARTA * i_h // i_w
             i_w = ANCHO_CARTA
 
     else:
-        i_h = ANCHO_CARTA * i_h / i_w
+        i_h = ANCHO_CARTA * i_h // i_w
         i_w = ANCHO_CARTA
         if i_h < ALTO_CARTA:
-            i_w = ALTO_CARTA * i_w / i_h
+            i_w = ALTO_CARTA * i_w // i_h
             i_h = ALTO_CARTA
 
     imagen = pygame.transform.scale(imagen, (i_w, i_h))
-    ajuste_horizontal = (ANCHO_CARTA - i_w) / 2
-    ajuste_vertical = (ALTO_CARTA - i_h) / 2
+    ajuste_horizontal = (ANCHO_CARTA - i_w) // 2
+    ajuste_vertical = (ALTO_CARTA - i_h) // 2
 
     resultado.blit(imagen, (ajuste_horizontal, ajuste_vertical))
 
@@ -191,7 +191,7 @@ def generar_imagen_evento(carta):
     fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 25)
 
     label = fuente.render(str(carta.obtener_nombre()), 1, (255, 255, 255))
-    center_horizontal = 115 + ((435 - 155) - label.get_size()[0]) / 2
+    center_horizontal = 115 + ((435 - 155) - label.get_size()[0]) // 2
     resultado.blit(label, (center_horizontal, 570))  # Min 155 - Max 350 || #Min 555 - Max 575
 
     fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
@@ -202,14 +202,14 @@ def generar_imagen_evento(carta):
 
     alto_linea = lineas[0].get_size()[1]
 
-    caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA / 8, alto_linea * len(lineas)), pygame.SRCALPHA)
+    caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA // 8, alto_linea * len(lineas)), pygame.SRCALPHA)
     caja_de_texto.fill((255, 255, 255, 150))
     posicion = 565
-    resultado.blit(caja_de_texto, (ANCHO_CARTA / 16, posicion - caja_de_texto.get_size()[1]))
+    resultado.blit(caja_de_texto, (ANCHO_CARTA // 16, posicion - caja_de_texto.get_size()[1]))
 
     for label in lineas[::-1]:
         posicion -= alto_linea
-        resultado.blit(label, (ANCHO_CARTA / 16, posicion))
+        resultado.blit(label, (ANCHO_CARTA // 16, posicion))
 
     if (carta.obtener_habilidad()):
         lineas = []
@@ -218,14 +218,14 @@ def generar_imagen_evento(carta):
 
         alto_linea = lineas[0].get_size()[1]
 
-        caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA / 8, alto_linea * len(lineas)), pygame.SRCALPHA)
+        caja_de_texto = pygame.Surface((ANCHO_CARTA - ANCHO_CARTA // 8, alto_linea * len(lineas)), pygame.SRCALPHA)
         caja_de_texto.fill((255, 255, 255, 150))
         posicion -= 5
-        resultado.blit(caja_de_texto, (ANCHO_CARTA / 16, posicion - caja_de_texto.get_size()[1]))
+        resultado.blit(caja_de_texto, (ANCHO_CARTA // 16, posicion - caja_de_texto.get_size()[1]))
 
         for label in lineas[::-1]:
             posicion -= alto_linea
-            resultado.blit(label, (ANCHO_CARTA / 16, posicion))
+            resultado.blit(label, (ANCHO_CARTA // 16, posicion))
 
     return resultado
 
@@ -246,22 +246,22 @@ def generar_imagen_climax(carta):
     imagen = pygame.image.load("resources/card_images/" + archivo_imagen)
     i_w, i_h = imagen.get_size()
     if i_w > i_h:
-        i_w = ALTO_CLIMAX * i_w / i_h
+        i_w = ALTO_CLIMAX * i_w // i_h
         i_h = ALTO_CLIMAX
         if i_w < ANCHO_CLIMAX:
-            i_h = ANCHO_CLIMAX * i_h / i_w
+            i_h = ANCHO_CLIMAX * i_h // i_w
             i_w = ANCHO_CLIMAX
 
     else:
-        i_h = ANCHO_CLIMAX * i_h / i_w
+        i_h = ANCHO_CLIMAX * i_h // i_w
         i_w = ANCHO_CLIMAX
         if i_h < ALTO_CLIMAX:
-            i_w = ALTO_CLIMAX * i_w / i_h
+            i_w = ALTO_CLIMAX * i_w // i_h
             i_h = ALTO_CLIMAX
 
     imagen = pygame.transform.scale(imagen, (i_w, i_h))
-    ajuste_horizontal = (ANCHO_CLIMAX - i_w) / 2
-    ajuste_vertical = (ALTO_CLIMAX - i_h) / 2
+    ajuste_horizontal = (ANCHO_CLIMAX - i_w) // 2
+    ajuste_vertical = (ALTO_CLIMAX - i_h) // 2
 
     resultado.blit(imagen, (ajuste_horizontal, ajuste_vertical))
 
@@ -284,7 +284,7 @@ def generar_imagen_climax(carta):
     fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 22)
 
     label = fuente.render(str(carta.obtener_nombre()), 1, (255, 255, 255))
-    centro_horizontal = 380 + ((580 - 380) - label.get_size()[0]) / 2
+    centro_horizontal = 380 + ((580 - 380) - label.get_size()[0]) // 2
     resultado.blit(label, (centro_horizontal, 394))
 
     fuente = pygame.font.Font("resources/agfarotissemiserif.ttf", 16)
